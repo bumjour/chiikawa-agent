@@ -36,12 +36,16 @@
     .slot .ko { font-size: 14px; font-weight: 700; line-height: 1.45; }
     .slot .ja { margin-top: 3px; font-size: 11px; line-height: 1.45; color: #8a786b; }
     .slot .pet.hop { animation: hop 0.45s ease-in-out 2; }
+    /* 세로 영상: 4명 + 3명 두 줄 */
+    body.portrait #row { flex-wrap: wrap; max-width: 1040px; margin: 0 auto; gap: 0 10px; }
+    body.portrait .slot { width: 248px; height: 440px; }
   </style>
 </head>
 <body>
   <div id="row"></div>
   <script src="placeholder.js"></script>
   <script>
+    if (new URLSearchParams(location.search).get('layout') === 'portrait') document.body.classList.add('portrait');
     // main(demo.js)이 setLineup(cast)로 캐릭터 목록을 넘겨요: [{ id, nameKo, color, image, ko, ja }]
     function setLineup(cast) {
       const row = document.getElementById('row');

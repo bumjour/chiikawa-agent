@@ -112,14 +112,46 @@ async function startRecorder(outFile) {
   };
 }
 
+// ---- 세로 녹화: 녹화하는 동안만 모니터를 세로로 ----
+const ROTATE_PS = path.join(__dirname, 'display-rotate.ps1');
+function rotate(mode) {
+  if (process.platform !== 'win32') return false;
+  try {
+    const out = require('child_process').execFileSync('powershell.exe',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ROTATE_PS, mode], { encoding: 'utf8', timeout: 20000 });
+    return /ok|이미/.test(out);
+  } catch { return false; }
+}
+// 화면 크기 바뀐 게 반영될 때까지 기다리기
+async function waitForOrientation(portrait) {
+  for (let i = 0; i < 30; i++) {
+    const { width, height } = screen.getPrimaryDisplay().size;
+    if ((height > width) === portrait) return true;
+    await wait(200);
+  }
+  return false;
+}
+
 // ---- 시나리오 ----
+const DEMO_NAME = { ko: '지훈', ja: 'ジフン' }; // 우리나라에서 가장 흔한 이름 중 하나 (예시)
+const Z = 1.6; // 세로 영상에서 휴대폰으로도 읽히게 캐릭터·말풍선 확대 배율
+
 async function run(ctx) {
   const { pets, config, talkSchedule, makeChatter, askChar, systemPrompt, imageFor, log } = ctx;
   const say = (m) => { console.log('[demo] ' + m); log(`[demo] ${m}`); };
   let aborted = false;
   globalShortcut.register('CommandOrControl+Alt+Q', () => { aborted = true; say('중단 요청'); });
+  const step = async (ms) => { if (aborted) throw new Error('aborted'); await wait(ms); };
+  let zoom = 1;
+  let input = null;
+  const setChar = async (role, id) => {
+    config.update({ characters: { [role]: id } });
+    pets[role].reload();
+    await wait(800);
+    pets[role].webContents.setZoomFactor(zoom);
+  };
 
-  // 화면 위 요소의 중심 좌표 (DIP)
+  // 화면 위 요소의 중심 좌표 (확대 배율 반영, DIP)
   async function center(role, selector) {
     const win = pets[role];
     const r = await win.webContents.executeJavaScript(`(() => { const el = document.querySelector(${JSON.stringify(selector)});
@@ -127,7 +159,8 @@ async function run(ctx) {
       return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
     if (!r) return null;
     const [wx, wy] = win.getPosition();
-    return { x: Math.round(wx + r.x), y: Math.round(wy + r.y) };
+    const zf = win.webContents.getZoomFactor();
+    return { x: Math.round(wx + r.x * zf), y: Math.round(wy + r.y * zf) };
   }
   async function clickOn(role, selector, ms) {
     const p = await center(role, selector);
@@ -135,30 +168,27 @@ async function run(ctx) {
     await input.moveTo(p.x, p.y, ms); await wait(150); await input.click();
     return true;
   }
-  const setChar = async (role, id) => { config.update({ characters: { [role]: id } }); pets[role].reload(); await wait(700); };
-  const step = async (ms) => { if (aborted) throw new Error('aborted'); await wait(ms); };
 
   const { CHARACTERS } = require('./characters');
   const LINEUP = ['chiikawa', 'hachiware', 'usagi', 'momonga', 'kurimanju', 'shisa', 'rakko'];
+  const N = DEMO_NAME.ko; const NJ = DEMO_NAME.ja;
   // AI 답이 안 올 때 쓰는 대사 (캐릭터 말투)
   const FALLBACK = {
-    chiikawa: { ko: '와아…! 포니…!', ja: 'ワァ…！ポニー…！' },
-    hachiware: { ko: '있잖아~ 포니, 오늘도 힘내자!', ja: 'ねえねえポニー、今日もがんばろ！' },
-    usagi: { ko: '야하! 포니! 우라!', ja: 'ヤハ！ポニー！ウラ！' },
-    momonga: { ko: '포니! 나 칭찬해!', ja: 'ポニー！ほめろ！' },
-    kurimanju: { ko: '하아—ッ! 포니, 수고했어.', ja: 'ハァーッ！ポニー、おつかれ。' },
-    shisa: { ko: '포니 님, 기쁘시사!', ja: 'ポニーさん、うれシーサー！' },
-    rakko: { ko: '그렇군… 포니, 가자.', ja: 'なるほど…ポニー、行くぞ。' },
+    chiikawa: { ko: `와아…! ${N}…!`, ja: `ワァ…！${NJ}…！` },
+    hachiware: { ko: `있잖아~ ${N}, 오늘도 힘내자!`, ja: `ねえねえ${NJ}、今日もがんばろ！` },
+    usagi: { ko: `야하! ${N}! 우라!`, ja: `ヤハ！${NJ}！ウラ！` },
+    momonga: { ko: `${N}! 나 칭찬해!`, ja: `${NJ}！ほめろ！` },
+    kurimanju: { ko: `하아—ッ! ${N}, 수고했어.`, ja: `ハァーッ！${NJ}、おつかれ。` },
+    shisa: { ko: `${N} 님, 기쁘시사!`, ja: `${NJ}さん、うれシーサー！` },
+    rakko: { ko: `그렇군… ${N}, 가자.`, ja: `なるほど…${NJ}、行くぞ。` },
   };
-  const wa = screen.getPrimaryDisplay().workArea;
-  const cx = wa.x + wa.width / 2;
-  const cy = wa.y + wa.height / 2;
-  const PET_FROM_TOP = 560 - 22 - 75; // 캐릭터 창 위쪽에서 캐릭터 중심까지 (창 높이 560)
 
-  // 준비: 기본 캐릭터, AI 답 미리 받아 두기 (영상에서 기다리는 시간 줄이기)
-  say('준비 중… (캐릭터 7종 대사와 일정 답을 미리 받아 둬요)');
-  const orig = { ...config.load().characters };
-  const origPos = { schedule: pets.schedule.getPosition(), chat: pets.chat.getPosition() };
+  // ── 준비 (아직 가로 화면): 예시 이름·기본 캐릭터, AI 답 미리 받아 두기 ──
+  say('준비 중… (캐릭터 7종 대사와 일정 답을 미리 받아 둬요, 약 20초)');
+  const origChars = { ...config.load().characters };
+  const origProfile = { ...config.load().profile };
+  const origPos = { schedule: pets.schedule.getBounds(), chat: pets.chat.getBounds() };
+  config.update({ profile: { name: N, nameJa: NJ, nameJaFor: N } });
   await setChar('schedule', 'hachiware');
   await setChar('chat', 'usagi');
   for (const id of LINEUP) imageFor(id, 'idle'); // 아직 안 받은 그림이 있으면 받기 시작
@@ -177,35 +207,49 @@ async function run(ctx) {
   await talkSchedule('hachiware', 'remaining').catch(() => {});
   for (const w of Object.values(pets)) await w.webContents.executeJavaScript('closeBubble(), true');
 
-  // 7종 한 줄 세우기 창 (화면 정가운데, 클릭은 통과)
+  // ── 세로로 돌리기 ──
+  pets.schedule.hide();
+  pets.chat.hide();
+  const rotated = rotate('portrait') && await waitForOrientation(true);
+  say(rotated ? '화면을 세로로 돌렸어요' : '세로로 돌리지 못해서 가로로 녹화해요');
+  await wait(1500);
+  const wa = screen.getPrimaryDisplay().workArea;
+  const portrait = wa.height > wa.width;
+  zoom = portrait ? Z : 1.25;
+
+  // 7종 창(세로 화면에선 4+3 두 줄): 화면 가운데(릴스 안전 영역 안), 클릭은 통과
+  const LH = portrait ? 1000 : 560;
   const lineup = new BrowserWindow({
-    x: wa.x, y: Math.round(cy - PET_FROM_TOP), width: wa.width, height: 560, show: false,
+    x: wa.x, y: Math.round(wa.y + wa.height * (portrait ? 0.55 : 0.5) - LH / 2), width: wa.width, height: LH, show: false,
     transparent: true, frame: false, hasShadow: false, backgroundColor: '#00000000',
     resizable: false, skipTaskbar: true, focusable: false, alwaysOnTop: true,
     webPreferences: { contextIsolation: true, sandbox: true },
   });
   lineup.setAlwaysOnTop(true, 'floating');
   lineup.setIgnoreMouseEvents(true);
-  await lineup.loadFile(path.join(__dirname, '..', 'renderer', 'lineup.html'));
+  await lineup.loadFile(path.join(__dirname, '..', 'renderer', 'lineup.html'), { query: { layout: portrait ? 'portrait' : 'row' } });
+  lineup.webContents.setZoomFactor(portrait ? 1.05 : 1);
   await lineup.webContents.executeJavaScript(`setLineup(${JSON.stringify(cast)}), true`);
 
-  // 두 캐릭터는 화면 가운데에 나란히 (하치와레 왼쪽, 우사기 오른쪽)
-  const placePets = () => {
-    pets.schedule.setPosition(Math.round(cx - 140 - 170), Math.round(cy - PET_FROM_TOP));
-    pets.chat.setPosition(Math.round(cx + 140 - 170), Math.round(cy - PET_FROM_TOP));
-  };
-  pets.schedule.hide();
-  pets.chat.hide();
+  // 두 캐릭터: 확대해서 화면 가운데(세로 화면 기준 62% 높이)에 나란히
+  const W = Math.round(340 * zoom);
+  const H = Math.round(560 * zoom);
+  const petFromTop = (560 - 22 - 75) * zoom;
+  const petY = wa.y + wa.height * (portrait ? 0.62 : 0.6);
+  const gap = portrait ? wa.width * 0.25 : 150 * zoom;
+  pets.schedule.setBounds({ x: Math.round(wa.x + wa.width / 2 - gap - W / 2), y: Math.round(petY - petFromTop), width: W, height: H });
+  pets.chat.setBounds({ x: Math.round(wa.x + wa.width / 2 + gap - W / 2), y: Math.round(petY - petFromTop), width: W, height: H });
+  for (const w of Object.values(pets)) w.webContents.setZoomFactor(zoom);
   lineup.showInactive();
 
-  const input = startInput();
+  input = startInput();
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   const out = path.join(app.getPath('videos'), `치이카와-데모-${stamp}`);
-  // 배경: 엑셀이 켜져 있으면 최대화해서 맨 앞으로 (터미널 등 다른 창을 가리도록)
+  // 배경: 엑셀을 최대화해서 맨 앞으로 (터미널 등 다른 창을 가리도록)
   await input.front('EXCEL');
-  await wait(1200);
-  await input.moveTo(wa.x + wa.width * 0.82, wa.y + wa.height * 0.2, 200); // 커서는 구석에 대기
-  await wait(800);
+  await wait(1500);
+  await input.moveTo(wa.x + wa.width * 0.85, wa.y + wa.height * 0.3, 200); // 커서는 구석에 대기
+  await wait(600);
   const rec = await startRecorder(out);
   say('녹화 시작');
 
@@ -217,9 +261,8 @@ async function run(ctx) {
       await step(700);
     }
     await step(2600);
-    // 두 캐릭터만 가운데에 남기기
+    // 두 캐릭터만 남기기
     lineup.hide();
-    placePets();
     pets.schedule.showInactive();
     pets.chat.showInactive();
     await step(900);
@@ -233,8 +276,7 @@ async function run(ctx) {
     // ③ 남은 일정
     await clickOn('schedule', '#modeBtn', 550);
     await step(5200);
-    // 일정 말풍선 닫기
-    await clickOn('schedule', '#pet', 500);
+    await clickOn('schedule', '#pet', 500); // 닫기
     await step(700);
     // ④ 우사기 대화
     await clickOn('chat', '#pet');
@@ -251,11 +293,11 @@ async function run(ctx) {
     await step(900);
     await input.keys('{DOWN}'); await step(350);
     await input.keys('{RIGHT}'); await step(600);
-    await input.keys('{DOWN}{DOWN}{DOWN}'); await step(600);   // 하위 메뉴는 치이카와부터 → 하치와레 → 우사기 → 모몽가
+    await input.keys('{DOWN}{DOWN}{DOWN}'); await step(600); // 하위 메뉴는 치이카와부터 → 하치와레 → 우사기 → 모몽가
     await input.keys('{ENTER}');
-    await step(2000);
+    await step(2200);
     // ⑥ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
-    await input.moveTo(wa.x + wa.width * 0.82, wa.y + wa.height * 0.2, 500);
+    await input.moveTo(wa.x + wa.width * 0.85, wa.y + wa.height * 0.3, 500);
     pets.schedule.hide();
     pets.chat.hide();
     lineup.showInactive();
@@ -264,18 +306,29 @@ async function run(ctx) {
     if (err.message !== 'aborted') say('오류: ' + err.message);
   }
 
-  const file = await rec.stop();
+  let file = null;
+  try { file = await rec.stop(); } catch (err) { say('녹화 저장 실패: ' + err.message); }
   input.close();
   globalShortcut.unregisterAll();
   lineup.destroy();
-  await setChar('schedule', orig.schedule);
-  await setChar('chat', orig.chat);
-  pets.schedule.setPosition(...origPos.schedule);
-  pets.chat.setPosition(...origPos.chat);
+
+  // ── 원래대로: 가로 화면, 캐릭터·이름·위치·배율 ──
+  if (rotated) { rotate('landscape'); await waitForOrientation(false); await wait(1000); }
+  zoom = 1;
+  config.update({ profile: { name: origProfile.name, nameJa: origProfile.nameJa || '', nameJaFor: origProfile.nameJaFor || '' } });
+  await setChar('schedule', origChars.schedule);
+  await setChar('chat', origChars.chat);
+  pets.schedule.setBounds(origPos.schedule);
+  pets.chat.setBounds(origPos.chat);
   pets.schedule.showInactive();
   pets.chat.showInactive();
-  say('녹화 저장: ' + file);
-  require('electron').shell.showItemInFolder(file);
+  if (file) { say('녹화 저장: ' + file); require('electron').shell.showItemInFolder(file); }
 }
+
+// 시연 도중 앱이 꺼져도 화면은 가로로 되돌려 두기
+app.on('will-quit', () => {
+  const { width, height } = screen.getPrimaryDisplay().size;
+  if (height > width) rotate('landscape');
+});
 
 module.exports = { run };
