@@ -9,7 +9,6 @@ const { pathToFileURL } = require('url');
 const ROOT = path.join(__dirname, '..');
 const IMG = path.join(__dirname, 'img');
 const OUT = path.join(__dirname, '치이카와 에이전트 설치 방법.pdf');
-const R2 = 'https://r2.chiikawawallpaper.com/wallpaper/gif/';
 fs.mkdirSync(IMG, { recursive: true });
 
 // 출력 받는 쪽이 먼저 닫혀도(EPIPE) 오류 창을 띄우지 않기
@@ -19,23 +18,15 @@ app.setPath('userData', path.join(require('os').tmpdir(), 'chiikawa-guide-build'
 // 2분 넘게 걸리면 멈춘 것으로 보고 종료 (창이 남아 있지 않게)
 setTimeout(() => { console.log('시간 초과로 종료'); app.exit(1); }, 120000).unref();
 
-// 캡처에 쓸 캐릭터 그림: 개발 PC에 받아 둔 파일이 있으면 그걸, 없으면 원래 주소
-function art(charId, file) {
-  const local = path.join(ROOT, 'characters', charId, file);
-  return fs.existsSync(local) ? pathToFileURL(local).href : R2 + file;
-}
-const bundled = (p) => pathToFileURL(path.join(ROOT, 'assets', 'characters', p)).href;
-
+// 가이드에는 공식 캐릭터 그림을 넣지 않아요(저작권). 캐릭터는 모두 앱의 임시 그림(placeholder.js)으로 나와요.
 const HACHI = { role: 'schedule', roleLabel: '일정 비서', id: 'hachiware', nameKo: '하치와레', nameJa: 'ハチワレ', color: '#fff',
-  images: { idle: art('hachiware', '17e51f83bd6649f2bcea2d61ba8955fd.gif'), talk: null } };
+  images: { idle: null, talk: null } }; // 공식 그림 대신 임시 그림
 const USAGI = { role: 'chat', roleLabel: 'AI 대화', id: 'usagi', nameKo: '우사기', nameJa: 'うさぎ', color: '#fff3c4',
-  images: { idle: art('usagi', '4f47518c8d9f447682e067cfd59b626b.gif'), talk: null } };
+  images: { idle: null, talk: null } };
 const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.0', chatter: 'sometimes',
   profile: { name: '포니', type: 'worker', setupDone: false } };
-const PICKER = { charId: 'momonga', nameKo: '모몽가', color: '#f7f7f7',
-  items: [1, 2, 3, 4, 5].map((n) => ({ value: `m${n}`, thumb: bundled(`momonga/momonga${n}.png`) }))
-    .concat([{ value: 'g1', thumb: R2 + '0b8404aaca03403a9c534d4f27931d1d.gif' }]),
-  selected: { idle: 'm1', talk: 'm2' } };
+// 모습 고르기: 이미지를 아직 안 넣은 상태(임시 그림 + "내 이미지 추가" 안내)로 캡처
+const PICKER = { charId: 'kurimanju', nameKo: '쿠리만쥬', color: '#fbe6bd', items: [], selected: { idle: null, talk: 'none' } };
 
 const BG = '#dfe8f2'; // 바탕화면 느낌 배경
 
@@ -94,13 +85,27 @@ async function printGuide() {
   await win.loadFile(path.join(__dirname, 'guide.html'));
   await new Promise((r) => setTimeout(r, 2500)); // 바깥 이미지까지 다 받을 시간
   const pdf = await win.webContents.printToPDF({ pageSize: 'A4', printBackground: true, margins: { marginType: 'none' } });
-  fs.writeFileSync(OUT, pdf);
-  console.log('PDF:', OUT, `${(pdf.length / 1048576).toFixed(1)}MB`);
+  let out = OUT;
+  try {
+    fs.writeFileSync(out, pdf);
+  } catch (err) {
+    // PDF 뷰어에서 열려 있으면 덮어쓸 수 없어요 → 새 이름으로 저장
+    if (err.code !== 'EBUSY' && err.code !== 'EPERM') throw err;
+    out = OUT.replace('.pdf', ` (새 버전 ${new Date().toTimeString().slice(0, 5).replace(':', '')}).pdf`);
+    fs.writeFileSync(out, pdf);
+    console.log('기존 PDF가 열려 있어서 새 이름으로 저장했어요.');
+  }
+  console.log('PDF:', out, `${(pdf.length / 1048576).toFixed(1)}MB`);
 }
 
 app.on('window-all-closed', () => {});
 app.whenReady().then(async () => {
-  if (!process.argv.includes('--pdf-only')) await captureAll();
-  await printGuide();
+  try {
+    if (!process.argv.includes('--pdf-only')) await captureAll();
+    await printGuide();
+  } catch (err) {
+    console.log('실패:', err.message);
+    process.exitCode = 1;
+  }
   app.quit();
 });

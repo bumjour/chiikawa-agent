@@ -58,7 +58,7 @@
   .cover .sub { font-size: 13pt; color: var(--sub); margin-bottom: 14mm; }
   .lineup { display: flex; justify-content: center; align-items: flex-end; gap: 2mm; margin-bottom: 14mm; }
   .lineup figure { margin: 0; width: 23mm; }
-  .lineup img { width: 23mm; height: 23mm; object-fit: contain; }
+  .lineup .ph, .lineup .ph svg { width: 23mm; height: 23mm; display: block; }
   .lineup figcaption { font-size: 8pt; color: var(--sub); }
   .cover .meta { font-size: 9.5pt; color: var(--sub); line-height: 1.9; }
   .cover .badge { display: inline-block; margin-top: 10mm; padding: 2mm 5mm; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: 9pt; color: var(--sub); }
@@ -85,15 +85,18 @@
 
 <!-- ───────────── 표지 ───────────── -->
 <section class="page cover">
+  <!-- 저작권 때문에 공식 그림 대신 직접 그린 임시 그림(renderer/placeholder.js)을 써요 -->
   <div class="lineup">
-    <figure><img src="https://r2.chiikawawallpaper.com/wallpaper/gif/0a5b14fa1e054648a1b510aae2c3a2ca.gif"><figcaption>치이카와</figcaption></figure>
-    <figure><img src="../characters/hachiware/17e51f83bd6649f2bcea2d61ba8955fd.gif"><figcaption>하치와레</figcaption></figure>
-    <figure><img src="../characters/usagi/4f47518c8d9f447682e067cfd59b626b.gif"><figcaption>우사기</figcaption></figure>
-    <figure><img src="../assets/characters/momonga/momonga1.png"><figcaption>모몽가</figcaption></figure>
-    <figure><img src="../assets/characters/kurimanju/kurimanju1.png"><figcaption>쿠리만쥬</figcaption></figure>
-    <figure><img src="../assets/characters/shisa/shisa1.png"><figcaption>시사</figcaption></figure>
-    <figure><img src="../assets/characters/rakko/rakko1.png"><figcaption>랏코</figcaption></figure>
+    <figure><div class="ph" data-id="chiikawa" data-color="#ffffff"></div><figcaption>치이카와</figcaption></figure>
+    <figure><div class="ph" data-id="hachiware" data-color="#ffffff"></div><figcaption>하치와레</figcaption></figure>
+    <figure><div class="ph" data-id="usagi" data-color="#fff3c4"></div><figcaption>우사기</figcaption></figure>
+    <figure><div class="ph" data-id="momonga" data-color="#f7f7f7"></div><figcaption>모몽가</figcaption></figure>
+    <figure><div class="ph" data-id="kurimanju" data-color="#fbe6bd"></div><figcaption>쿠리만쥬</figcaption></figure>
+    <figure><div class="ph" data-id="shisa" data-color="#f6cf72"></div><figcaption>시사</figcaption></figure>
+    <figure><div class="ph" data-id="rakko" data-color="#f1e8dd"></div><figcaption>랏코</figcaption></figure>
   </div>
+  <script src="../renderer/placeholder.js"></script>
+  <script>document.querySelectorAll('.ph').forEach((el) => { el.innerHTML = placeholderSvg(el.dataset.id, el.dataset.color); });</script>
   <h1>치이카와 에이전트 설치 방법</h1>
   <p class="sub">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화하는 방법 A to Z</p>
   <div class="dl"><div class="t">⬇️ 무료 다운로드 (Windows · 맥)</div><div class="u">github.com/chiikawa-agent/chiikawa-agent/releases</div></div>
