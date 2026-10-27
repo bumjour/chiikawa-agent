@@ -133,7 +133,7 @@ async function waitForOrientation(portrait) {
 }
 
 // ---- 시나리오 ----
-const DEMO_NAME = { ko: '지훈', ja: 'ジフン' }; // 우리나라에서 가장 흔한 이름 중 하나 (예시)
+const DEMO_NAME = { ko: '서연', ja: 'ソヨン' }; // 대법원 통계상 가장 흔한 여자 이름 중 하나 (예시)
 const Z = 1.6; // 세로 영상에서 휴대폰으로도 읽히게 캐릭터·말풍선 확대 배율
 
 async function run(ctx) {

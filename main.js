@@ -158,7 +158,7 @@ async function askChar(cfg, opts) {
   return reply;
 }
 
-// 이름의 일본어(가타카나) 표기를 한 번 정해서 저장 (예: 지훈 → ジフン)
+// 이름의 일본어(가타카나) 표기를 한 번 정해서 저장 (예: 서연 → ソヨン)
 async function updateNameJa() {
   const cfg = config.load();
   const { name } = cfg.profile;

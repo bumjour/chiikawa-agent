@@ -24,7 +24,7 @@ const HACHI = { role: 'schedule', roleLabel: '일정 비서', id: 'hachiware', n
 const USAGI = { role: 'chat', roleLabel: 'AI 대화', id: 'usagi', nameKo: '우사기', nameJa: 'うさぎ', color: '#fff3c4',
   images: { idle: null, talk: null } };
 const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.0', chatter: 'sometimes',
-  profile: { name: '지훈', type: 'worker', setupDone: false } };
+  profile: { name: '서연', type: 'worker', setupDone: false } };
 // 모습 고르기: 이미지를 아직 안 넣은 상태(임시 그림 + "내 이미지 추가" 안내)로 캡처
 const PICKER = { charId: 'kurimanju', nameKo: '쿠리만쥬', color: '#fbe6bd', items: [], selected: { idle: null, talk: 'none' } };
 
@@ -58,7 +58,7 @@ const pet = (info, script) => ({ stub: { info }, width: 340, height: 560, bg: BG
 
 async function captureAll() {
   await shot('settings-profile', 'settings.html', { stub: { settings: SETTINGS }, width: 444, height: 581,
-    script: `document.getElementById('name').value='지훈'` });
+    script: `document.getElementById('name').value='서연'` });
   await shot('settings-ai', 'settings.html', { stub: { settings: { ...SETTINGS, tab: 'ai', profile: { ...SETTINGS.profile, setupDone: true } } }, width: 444, height: 581,
     script: `document.querySelector('[data-tab="ai"]').click(); document.getElementById('status').textContent='✅ 연결 성공! (gemini-3.6-flash)'; document.getElementById('status').className='status ok'` });
   await shot('settings-about', 'settings.html', { stub: { settings: { ...SETTINGS, tab: 'about', profile: { ...SETTINGS.profile, setupDone: true } } }, width: 444, height: 581 });
@@ -67,17 +67,17 @@ async function captureAll() {
   // 대사는 JSON으로 넘겨요 (줄바꿈·따옴표가 스크립트를 깨뜨리지 않게)
   const line = (ko, ja) => JSON.stringify({ ko, ja });
   await shot('bubble-schedule', 'index.html', pet(HACHI, `
-    say(${line('있잖아~ 지훈, 오늘 일정 알려줄게!\n\n10:00 팀 회의\n14:00 기획 리뷰\n✨ 19:30 운동 (곧이잖아!)\n\n오늘도 어떻게든 되어라—ッ!',
-    'ねえねえジフン、今日の予定だよ！ 10:00 チーム会議 / 14:00 企画レビュー / ✨19:30 運動（もうすぐじゃん！）なんとかなれーッ！')});
+    say(${line('있잖아~ 서연, 오늘 일정 알려줄게!\n\n10:00 팀 회의\n14:00 기획 리뷰\n✨ 19:30 운동 (곧이잖아!)\n\n오늘도 어떻게든 되어라—ッ!',
+    'ねえねえソヨン、今日の予定だよ！ 10:00 チーム会議 / 14:00 企画レビュー / ✨19:30 運動（もうすぐじゃん！）なんとかなれーッ！')});
     modeBtn.textContent = '⏰ 남은 일정'; schedBar.classList.remove('hidden');`));
   await shot('bubble-editor', 'index.html', pet(HACHI, `
     say(${line('오늘 일정 적어 줘!', '今日の予定を書いてね！')});
     openEditor([{ time: '10:00', text: '팀 회의' }, { time: '14:00', text: '기획 리뷰' }, { time: '19:30', text: '운동' }]);`));
   await shot('bubble-chat', 'index.html', pet(USAGI, `
     chatForm.classList.remove('hidden');
-    say(${line('야하! 지훈, 저녁은 야키소바다!! 우라!', 'ヤハ！ジフン、晩ごはんは焼きそばだッ！！ウラ！')});`));
+    say(${line('야하! 서연, 저녁은 야키소바다!! 우라!', 'ヤハ！ソヨン、晩ごはんは焼きそばだッ！！ウラ！')});`));
   await shot('bubble-chatter', 'index.html', pet(USAGI, `
-    say(${line('우라! 지훈, 점심 뭐야!', 'ウラ！ジフン、昼メシ何！')});`));
+    say(${line('우라! 서연, 점심 뭐야!', 'ウラ！ソヨン、昼メシ何！')});`));
 }
 
 async function printGuide() {
