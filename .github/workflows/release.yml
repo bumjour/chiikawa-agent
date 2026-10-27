@@ -1,0 +1,72 @@
+# 태그(v0.2.1 등)를 올리면 Windows·macOS 설치 파일을 만들어 Releases에 자동으로 올려요.
+# 맥 파일은 맥에서만 만들 수 있어서 GitHub가 빌려주는 macOS 서버에서 만들어요.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: # 수동 실행: 설치 파일만 만들어 보기 (Releases에는 안 올림)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Windows 설치 파일
+        if: runner.os == 'Windows'
+        run: npx electron-builder --win --publish never
+
+      - name: macOS 설치 파일 (M칩 + 인텔)
+        if: runner.os == 'macOS'
+        run: npx electron-builder --mac --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false # 애플 인증서 없음 → 임시(ad-hoc) 서명
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ runner.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: 치이카와 에이전트 ${{ github.ref_name }}
+          files: dist/*
+          body: |
+            ## 다운로드
+            | 컴퓨터 | 파일 |
+            |---|---|
+            | Windows 10/11 | `ChiikawaAgent-win-*.exe` |
+            | 맥 (M1~M4 칩) | `ChiikawaAgent-mac-*-arm64.dmg` |
+            | 맥 (인텔 칩) | `ChiikawaAgent-mac-*-x64.dmg` |
+
+            - **Windows**: "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**
+            - **맥**: 처음 열 때 경고가 뜨면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
+              ("손상되었기 때문에 열 수 없습니다"가 뜨면 터미널에 `xattr -cr "/Applications/치이카와 에이전트.app"`)
+
+            ## 고지
+            비공식 팬메이드 · 비영리 무료 배포. 「ちいかわ」의 모든 권리는 nagano 및 권리자에게 있으며, 요청 시 즉시 배포를 중단합니다. 캐릭터 이미지는 포함되어 있지 않습니다.

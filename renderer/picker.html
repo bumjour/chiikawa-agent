@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data: https://r2.chiikawawallpaper.com; style-src 'self' 'unsafe-inline'">
+  <title>모습 고르기</title>
+  <link rel="stylesheet" href="settings.css">
+  <link rel="stylesheet" href="picker.css">
+</head>
+<body>
+  <h1 id="title">모습 고르기</h1>
+  <p class="lead">① 위에서 <b>언제 모습</b>인지 고르고 → ② 아래 그림을 누르면 바로 바뀌어요.</p>
+
+  <div class="seg" id="kind">
+    <button data-v="idle" class="on">🙂 평소 모습</button>
+    <button data-v="talk">💬 말할 때 모습</button>
+  </div>
+
+  <div id="grid"></div>
+  <p id="empty" class="hint hidden">아직 예시 이미지가 없어요. 아래 버튼으로 직접 넣어 주세요.</p>
+
+  <div class="actions">
+    <button id="add" class="ghost">＋ 내 이미지 추가</button>
+    <button id="done" class="primary">완료</button>
+  </div>
+  <p class="hint">배경이 투명한 GIF·PNG, 몸 전체가 나온 그림이 가장 예뻐요.</p>
+
+  <script src="placeholder.js"></script>
+  <script src="picker.js"></script>
+</body>
+</html>

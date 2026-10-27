@@ -1,0 +1,18 @@
+node_modules/
+dist/
+
+# 개인 정보 (API 키·이름·일정·로그)
+config.json
+schedule.json
+agent.log
+agent-console.log
+backup/
+
+# 캐릭터 이미지 (저작권 때문에 저장소·배포판에 넣지 않아요)
+characters/
+assets/source/
+assets/characters/
+
+# 가이드 PDF·캡처 (캐릭터 그림이 들어 있어요)
+docs/img/
+docs/*.pdf

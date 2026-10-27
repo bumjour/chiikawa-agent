@@ -1,0 +1,75 @@
+:root {
+  --ink: #3b2f28;
+  --sub: #8a786b;
+  --line: #e4d9cf;
+  --accent: #7d9cc4;
+  --bg: #fffdf8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 22px 22px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 14px;
+}
+nav { display: flex; gap: 4px; padding: 14px 0 0; border-bottom: 2px solid var(--line); margin-bottom: 18px; }
+.tab {
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  color: var(--sub);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.lead { margin: 0 0 16px; line-height: 1.6; }
+label { display: block; margin: 14px 0 6px; font-size: 12px; font-weight: 700; color: var(--sub); }
+select, input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+}
+select:focus, input:focus { border-color: var(--ink); }
+.keyRow { display: flex; gap: 6px; }
+.keyRow input { flex: 1; font-family: Consolas, monospace; font-size: 13px; }
+
+button { font: inherit; cursor: pointer; }
+.ghost { padding: 9px 14px; border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+.primary { padding: 9px 22px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font-weight: 700; }
+.link { margin-top: 8px; padding: 0; border: 0; background: none; color: #5b7ba6; font-size: 13px; }
+.actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.hint { margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: var(--sub); }
+
+.status { min-height: 20px; margin-top: 14px; font-size: 13px; }
+.status.ok { color: #3f8a52; }
+.status.err { color: #c0504d; }
+
+h2 { margin: 0; font-size: 18px; }
+.ver { margin: 4px 0 14px; font-size: 12px; color: var(--sub); }
+.notice { padding: 4px 16px; border: 2px solid var(--line); border-radius: 14px; background: #fff; font-size: 13px; line-height: 1.6; }
+.notice ul { margin: 0 0 10px; padding-left: 18px; }
+
+.seg { display: flex; gap: 8px; }
+.seg button {
+  flex: 1;
+  padding: 11px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+}
+.seg button.on { border-color: var(--accent); background: #eef3fa; color: #3f5f8a; }

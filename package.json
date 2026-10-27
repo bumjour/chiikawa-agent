@@ -1,0 +1,68 @@
+{
+  "name": "chiikawa-agent",
+  "productName": "치이카와 에이전트",
+  "version": "0.2.1",
+  "description": "바탕화면에 떠 있는 치이카와 캐릭터 비서 (일정 알림 + AI 대화) · 비공식 팬메이드",
+  "author": "chiikawa-agent",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "guide": "electron docs/build-pdf.js"
+  },
+  "build": {
+    "appId": "io.github.chiikawa-agent",
+    "productName": "치이카와 에이전트",
+    "artifactName": "ChiikawaAgent-${os}-${version}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "settings-preload.js",
+      "picker-preload.js",
+      "build/icon.png",
+      "src/**",
+      "renderer/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "ChiikawaAgent-win-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "치이카와 에이전트"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "ChiikawaAgent-mac-${version}-${arch}.${ext}",
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "identity": "-"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0"
+  }
+}

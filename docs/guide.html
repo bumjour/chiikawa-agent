@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>치이카와 에이전트 설치 방법</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #3b2f28; --sub: #8a786b; --line: #e7ddd3; --accent: #7d9cc4; --accent-d: #4f6f9a;
+    --bg: #fffdf8; --soft: #f5f0e8; --pink: #f6b9c2; --warn: #c0504d; --ok: #3f8a52;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; color: var(--ink);
+    font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", "Yu Gothic", sans-serif; font-size: 10.5pt; line-height: 1.65; }
+  .page { width: 210mm; min-height: 297mm; padding: 18mm 18mm 16mm; position: relative; page-break-after: always; background: var(--bg); }
+  .page:last-child { page-break-after: auto; }
+  body { counter-reset: pg; }
+  .page { counter-increment: pg; }
+  .pn::after { content: counter(pg); }
+  .foot { position: absolute; bottom: 8mm; left: 18mm; right: 18mm; display: flex; justify-content: space-between; font-size: 8pt; color: var(--sub); }
+
+  h1 { font-size: 22pt; margin: 0 0 4mm; }
+  h2 { font-size: 16pt; margin: 0 0 5mm; padding-bottom: 2mm; border-bottom: 2.5px solid var(--accent); display: flex; align-items: baseline; gap: 3mm; }
+  h2 .no { color: var(--accent); font-size: 13pt; }
+  h3 { font-size: 12pt; margin: 6mm 0 2mm; }
+  p { margin: 0 0 3mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1.2mm; }
+  b { color: #2c221d; }
+  code, .key { font-family: Consolas, monospace; font-size: 9pt; background: var(--soft); padding: 0.3mm 1.5mm; border-radius: 1.5mm; }
+  .menu { display: inline-block; padding: 0 2mm; border: 1px solid var(--line); border-radius: 1.5mm; background: #fff; font-size: 9.5pt; white-space: nowrap; }
+
+  .box { border-radius: 4mm; padding: 4mm 5mm; margin: 3mm 0 4mm; }
+  .tip { background: #eef3fa; border-left: 4px solid var(--accent); }
+  .warn { background: #fdf0ef; border-left: 4px solid var(--warn); }
+  .note { background: var(--soft); }
+  .box > :last-child { margin-bottom: 0; }
+  .box-title { font-weight: 700; margin-bottom: 1.5mm; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; }
+  .steps > li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.5mm; }
+  .steps > li::before { content: counter(s); position: absolute; left: 0; top: 0.3mm; width: 6.5mm; height: 6.5mm; border-radius: 50%;
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 9pt; display: flex; align-items: center; justify-content: center; }
+
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.5pt; }
+  th, td { border: 1px solid var(--line); padding: 2mm 2.5mm; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 700; }
+
+  .row { display: flex; gap: 6mm; align-items: flex-start; }
+  .row > .col { flex: 1; min-width: 0; }
+  .shot { border: 1px solid var(--line); border-radius: 3mm; overflow: hidden; background: #fff; }
+  .shot img { display: block; width: 100%; }
+  .cap { font-size: 8.5pt; color: var(--sub); text-align: center; margin-top: 1.5mm; }
+
+  /* 표지 */
+  .cover { display: flex; flex-direction: column; justify-content: center; text-align: center; background: linear-gradient(#fffdf8, #eef3fa); }
+  .cover h1 { font-size: 30pt; margin-bottom: 3mm; }
+  .cover .sub { font-size: 13pt; color: var(--sub); margin-bottom: 14mm; }
+  .lineup { display: flex; justify-content: center; align-items: flex-end; gap: 2mm; margin-bottom: 14mm; }
+  .lineup figure { margin: 0; width: 23mm; }
+  .lineup img { width: 23mm; height: 23mm; object-fit: contain; }
+  .lineup figcaption { font-size: 8pt; color: var(--sub); }
+  .cover .meta { font-size: 9.5pt; color: var(--sub); line-height: 1.9; }
+  .cover .badge { display: inline-block; margin-top: 10mm; padding: 2mm 5mm; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: 9pt; color: var(--sub); }
+
+  .toc { list-style: none; padding: 0; columns: 2; column-gap: 10mm; }
+  .toc li { padding: 2mm 0; border-bottom: 1px dashed var(--line); break-inside: avoid; }
+  .toc .n { display: inline-block; width: 9mm; color: var(--accent); font-weight: 700; }
+
+  .feature { display: flex; gap: 4mm; align-items: flex-start; margin-bottom: 4mm; }
+  .feature .ic { flex: none; width: 11mm; height: 11mm; border-radius: 3mm; background: #eef3fa; display: flex; align-items: center; justify-content: center; font-size: 15pt; }
+</style>
+</head>
+<body>
+
+<!-- ───────────── 표지 ───────────── -->
+<section class="page cover">
+  <div class="lineup">
+    <figure><img src="https://r2.chiikawawallpaper.com/wallpaper/gif/0a5b14fa1e054648a1b510aae2c3a2ca.gif"><figcaption>치이카와</figcaption></figure>
+    <figure><img src="../characters/hachiware/17e51f83bd6649f2bcea2d61ba8955fd.gif"><figcaption>하치와레</figcaption></figure>
+    <figure><img src="../characters/usagi/4f47518c8d9f447682e067cfd59b626b.gif"><figcaption>우사기</figcaption></figure>
+    <figure><img src="../assets/characters/momonga/momonga1.png"><figcaption>모몽가</figcaption></figure>
+    <figure><img src="../assets/characters/kurimanju/kurimanju1.png"><figcaption>쿠리만쥬</figcaption></figure>
+    <figure><img src="../assets/characters/shisa/shisa1.png"><figcaption>시사</figcaption></figure>
+    <figure><img src="../assets/characters/rakko/rakko1.png"><figcaption>랏코</figcaption></figure>
+  </div>
+  <h1>치이카와 에이전트 설치 방법</h1>
+  <p class="sub">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화하는 방법 A to Z</p>
+  <p class="meta">버전 0.2.1 · Windows 10/11 · macOS 13 이상<br>다운로드: github.com/chiikawa-agent/chiikawa-agent/releases</p>
+  <div><span class="badge">비공식 팬메이드 · 비영리 무료 배포 · 「ちいかわ」의 모든 권리는 nagano 및 권리자에게 있어요</span></div>
+</section>
+
+<!-- ───────────── 목차 + 소개 ───────────── -->
+<section class="page">
+  <h2>목차</h2>
+  <ul class="toc">
+    <li><span class="n">01</span>치이카와 에이전트란?</li>
+    <li><span class="n">02</span>준비물</li>
+    <li><span class="n">03</span>다운로드·설치 (Windows / 맥)</li>
+    <li><span class="n">04</span>AI 키 발급 (Gemini · Claude · OpenAI)</li>
+    <li><span class="n">05</span>첫 설정</li>
+    <li><span class="n">06</span>사용법 ① 일정 비서</li>
+    <li><span class="n">07</span>사용법 ② AI 대화 · 혼잣말</li>
+    <li><span class="n">08</span>캐릭터 바꾸기 · 우클릭 메뉴</li>
+    <li><span class="n">09</span>캐릭터 이미지 가져오기 · 배경 없애기</li>
+        <li><span class="n">10</span>문제 해결</li>
+    <li><span class="n">11</span>개인정보 · 저작권 안내</li>
+  </ul>
+
+  <h2 style="margin-top:6mm"><span class="no">01</span>치이카와 에이전트란?</h2>
+  <p>바탕화면 한쪽에 치이카와 캐릭터 둘이 늘 떠 있는 작은 비서 프로그램이에요. 다른 창을 쓰는 동안에도 맨 위에 떠 있고, 캐릭터가 아닌 빈 곳은 클릭이 그대로 뒤쪽 창으로 통과해서 작업을 방해하지 않아요.</p>
+  <div class="feature"><div class="ic">📅</div><div><b>일정 비서</b> — 캐릭터를 클릭하면 오늘 일정을 그 캐릭터 말투로 알려 줘요. <b>한국어 바로 아래에 일본어</b>가 함께 나와요. 지금 시각 기준 <b>남은 일정</b>만 따로 볼 수도 있어요.</div></div>
+  <div class="feature"><div class="ic">💬</div><div><b>AI 대화</b> — 다른 캐릭터를 클릭하면 입력창이 열리고, 그 캐릭터 말투로 자유롭게 대화해요.</div></div>
+  <div class="feature"><div class="ic">🌱</div><div><b>혼잣말</b> — 가만히 있어도 가끔 시간대에 맞는 한마디를 건네요. 직장인인지 학생인지에 따라 내용이 달라요. (예: 직장인 11시 → "배고프다… 점심 뭐 먹지?")</div></div>
+  <div class="feature"><div class="ic">🎨</div><div><b>캐릭터 7종</b> — 치이카와 · 하치와레 · 우사기 · 모몽가 · 쿠리만쥬 · 시사 · 랏코 중에서 두 역할에 원하는 캐릭터를 골라요.</div></div>
+
+  <h2 style="margin-top:5mm"><span class="no">02</span>준비물</h2>
+  <table>
+    <tr><th style="width:32%">항목</th><th>내용</th></tr>
+    <tr><td>컴퓨터</td><td>Windows 10/11 (64비트) 또는 macOS 13 이상</td></tr>
+    <tr><td>인터넷</td><td>AI 응답과 캐릭터 예시 이미지를 받을 때 필요해요</td></tr>
+    <tr><td>Google 계정</td><td>무료 Gemini AI 키를 만들 때 필요해요 (개인 Gmail이면 충분)</td></tr>
+    <tr><td>걸리는 시간</td><td>설치 3분 + AI 키 발급 2분 + 첫 설정 1분 ≒ <b>약 6분</b></td></tr>
+  </table>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 03 설치 ───────────── -->
+<section class="page">
+  <h2><span class="no">03</span>다운로드 · 설치</h2>
+  <h3>Windows</h3>
+  <ol class="steps">
+    <li>다운로드 페이지 <code>github.com/chiikawa-agent/chiikawa-agent/releases</code> 에 들어가요.</li>
+    <li>가장 위 버전의 <b>Assets</b>에서 <code>ChiikawaAgent-win-0.2.1.exe</code> 를 눌러 받아요. (약 115MB)</li>
+    <li>받은 파일을 더블클릭해요.</li>
+    <li>파란 <b>"Windows의 PC 보호"</b> 창이 뜨면 <span class="menu">추가 정보</span> → <span class="menu">실행</span> 을 눌러요.</li>
+    <li>설치 창에서 설치 위치를 확인하고 <span class="menu">설치</span> 를 눌러요. 끝나면 바탕화면과 시작 메뉴에 <b>치이카와 에이전트</b>가 생겨요.</li>
+  </ol>
+  <div class="box tip"><div class="box-title">💡 "PC 보호" 창은 왜 뜨나요?</div>
+    <p>개인이 만든 무료 프로그램이라 마이크로소프트 유료 인증서(코드 서명)를 붙이지 않았기 때문이에요. 바이러스라는 뜻이 아니에요. 출처가 위 다운로드 페이지가 맞는지만 확인해 주세요.</p></div>
+
+  <h3>macOS (맥)</h3>
+  <ol class="steps">
+    <li>다운로드 페이지에서 <code>ChiikawaAgent-mac-0.2.1-arm64.dmg</code>(M1~M4 칩) 또는 <code>ChiikawaAgent-mac-0.2.1-x64.dmg</code>(인텔 칩)를 받아요. 내 칩은 <span class="menu"> 메뉴 → 이 Mac에 관하여</span> 에서 확인해요.</li>
+    <li>dmg를 열고 <b>치이카와 에이전트</b>를 <b>응용 프로그램</b> 폴더로 끌어다 놓아요.</li>
+    <li>처음 열 때 "열 수 없음" 경고가 뜨면 <span class="menu">완료</span> 로 닫아요. (<span class="menu">휴지통으로 이동</span> 은 누르지 마세요)</li>
+    <li><span class="menu">시스템 설정 → 개인정보 보호 및 보안</span> 맨 아래의 <span class="menu">그래도 열기</span> → 암호/Touch ID → <span class="menu">열기</span></li>
+    <li>그래도 <b>"손상되었기 때문에 열 수 없습니다"</b>가 뜨면 <span class="menu">응용 프로그램 → 유틸리티 → 터미널</span> 에 아래 한 줄을 붙여넣고 Enter 후 다시 열어요.<br><code>xattr -cr "/Applications/치이카와 에이전트.app"</code></li>
+  </ol>
+
+  <h3>프로그램 끄기 · 지우기</h3>
+  <ul>
+    <li><b>끄기</b>: 캐릭터를 우클릭 → <span class="menu">종료</span></li>
+    <li><b>지우기 (Windows)</b>: <span class="menu">설정 → 앱 → 설치된 앱</span> 에서 "치이카와 에이전트" 제거</li>
+    <li><b>지우기 (맥)</b>: 응용 프로그램 폴더에서 휴지통으로</li>
+  </ul>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 04 AI 키 ───────────── -->
+<section class="page">
+  <h2><span class="no">04</span>AI 키 발급</h2>
+  <p>캐릭터가 말투를 살려 말하려면 AI 서비스의 <b>API 키</b>(비밀번호 같은 문자열)가 필요해요. 세 가지 중 하나만 있으면 돼요.</p>
+  <table>
+    <tr><th style="width:24%">서비스</th><th style="width:18%">비용</th><th>특징</th></tr>
+    <tr><td><b>Google Gemini</b> ⭐추천</td><td>무료 등급 있음</td><td>카드 등록 없이 바로 시작. 하루에 여러 번 대화해도 무료 한도 안이에요. 단, 무료 등급은 입력 내용이 구글 서비스 개선에 쓰일 수 있어요.</td></tr>
+    <tr><td>Anthropic Claude</td><td>선불 충전</td><td>캐릭터 말투 재현이 자연스러워요. 최소 충전 금액이 있어요.</td></tr>
+    <tr><td>OpenAI</td><td>선불 충전</td><td>최소 충전 금액이 있어요.</td></tr>
+  </table>
+
+  <h3>Gemini 키 만들기 (무료)</h3>
+  <ol class="steps">
+    <li><code>aistudio.google.com</code> 에 들어가 Google 계정으로 로그인해요. 처음이면 약관에 동의해요.</li>
+    <li>왼쪽 메뉴 <span class="menu">Get API key</span> → <span class="menu">Create API key</span> 를 눌러요.</li>
+    <li>만들어진 키 옆의 복사 버튼을 눌러요. 키는 <code>AIza…</code> 또는 <code>AQ.…</code> 로 시작해요.</li>
+    <li>치이카와 에이전트 설정 창의 <b>AI 연결</b> 탭에 붙여넣어요. (05 첫 설정 참고)</li>
+  </ol>
+  <div class="box tip"><p>설정 창의 <span class="menu">🔑 키 발급받으러 가기</span> 버튼을 누르면 고른 서비스의 키 발급 페이지가 바로 열려요.</p></div>
+
+  <h3>Claude · OpenAI 키 만들기</h3>
+  <ul>
+    <li><b>Claude</b>: <code>console.anthropic.com</code> 가입 → <span class="menu">Billing</span> 에서 크레딧 충전 → <span class="menu">API Keys</span> → <span class="menu">Create Key</span> (키는 <code>sk-ant-</code> 로 시작)</li>
+    <li><b>OpenAI</b>: <code>platform.openai.com</code> 가입 → <span class="menu">Billing</span> 에서 충전 → <span class="menu">API keys</span> → <span class="menu">Create new secret key</span> (키는 <code>sk-</code> 로 시작)</li>
+  </ul>
+
+  <div class="box warn"><div class="box-title">⚠️ 키는 비밀번호처럼 다뤄 주세요</div>
+    <ul>
+      <li>카톡·메일·채팅에 붙여넣지 마세요. 누군가 내 키로 AI를 쓰면 한도가 줄거나 요금이 나와요.</li>
+      <li>키가 노출됐다면 발급 페이지에서 그 키를 <b>삭제</b>하고 새로 만들어 넣으면 돼요.</li>
+      <li>키는 이 컴퓨터 안에만 저장되고, 개발자에게 전송되지 않아요.</li>
+    </ul></div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 05 첫 설정 ───────────── -->
+<section class="page">
+  <h2><span class="no">05</span>첫 설정</h2>
+  <p>설치 후 처음 실행하면 캐릭터 둘(<b>하치와레 = 일정 비서</b>, <b>우사기 = AI 대화</b>)이 화면 오른쪽 아래에 뜨고, 1초 뒤 설정 창이 열려요.</p>
+  <div class="row">
+    <div class="col">
+      <div class="shot"><img src="img/settings-profile.png"></div>
+      <div class="cap">① 내 정보</div>
+    </div>
+    <div class="col">
+      <div class="shot"><img src="img/settings-ai.png"></div>
+      <div class="cap">② AI 연결</div>
+    </div>
+  </div>
+  <h3>① 내 정보</h3>
+  <ul>
+    <li><b>불리고 싶은 이름</b>: 캐릭터가 이 이름으로 불러 줘요. 일본어 문장에서는 가타카나로 바뀌어요. (예: 포니 → ポニー)</li>
+    <li><b>직장인 / 학생</b>: 시간대별 혼잣말과 대화 주제가 달라져요.</li>
+    <li><b>혼잣말</b>: 자주(15~30분마다) · 가끔(40~80분마다) · 끄기</li>
+  </ul>
+  <h3>② AI 연결</h3>
+  <ol class="steps">
+    <li>AI 서비스를 고르고 (기본 Gemini) 04에서 만든 키를 붙여넣어요.</li>
+    <li><span class="menu">연결 테스트</span> → "✅ 연결 성공!"이 뜨면 <span class="menu">저장</span></li>
+  </ol>
+  <div class="box tip"><p>나중에 바꾸고 싶으면 캐릭터 우클릭 → <span class="menu">내 정보·혼잣말 설정…</span> 또는 <span class="menu">AI 키 설정…</span> 에서 언제든 고칠 수 있어요. 키가 없어도 일정 적기·목록 보기는 돼요.</p></div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 06 일정 비서 ───────────── -->
+<section class="page">
+  <h2><span class="no">06</span>사용법 ① 일정 비서</h2>
+  <div class="row">
+    <div class="col" style="flex:0 0 58mm">
+      <div class="shot"><img src="img/bubble-editor.png"></div>
+      <div class="cap">일정 적기</div>
+    </div>
+    <div class="col">
+      <h3 style="margin-top:0">오늘 일정 적기</h3>
+      <ol class="steps">
+        <li>일정 비서 캐릭터를 클릭해요. 오늘 일정이 없으면 입력칸이 바로 열려요.<br>(또는 우클릭 → <span class="menu">오늘 일정 적기</span>)</li>
+        <li>한 줄에 일정 하나: 왼쪽 <b>시간</b>, 오른쪽 <b>내용</b>을 적어요.</li>
+        <li>내용 칸에서 <span class="key">Enter</span> → 다음 줄로, <span class="menu">+ 일정 추가</span> 로 줄 늘리기, <span class="menu">×</span> 로 줄 지우기</li>
+        <li><span class="menu">저장하고 들려줘</span> (또는 <span class="key">Ctrl</span>+<span class="key">Enter</span>)</li>
+      </ol>
+      <p>저장하면 시간순으로 정렬돼요. 시간을 비운 일정은 "시간 미정"으로 맨 뒤에 가요. 일정은 <b>날짜별로 따로 저장</b>돼서 매일 새로 적으면 돼요.</p>
+    </div>
+  </div>
+  <div class="row" style="margin-top:6mm">
+    <div class="col" style="flex:0 0 58mm">
+      <div class="shot"><img src="img/bubble-schedule.png"></div>
+      <div class="cap">일정 브리핑</div>
+    </div>
+    <div class="col">
+      <h3 style="margin-top:0">일정 듣기</h3>
+      <ul>
+        <li>캐릭터를 클릭하면 오늘 <b>전체 일정</b>을 캐릭터 말투로 알려 줘요. 한국어 아래에 일본어가 나와요.</li>
+        <li><span class="menu">⏰ 남은 일정</span>: 지금 시각 이후 일정만, 가장 가까운 일정까지 남은 시간과 함께 알려 줘요. <span class="menu">↩ 돌아가기</span> 로 처음 브리핑으로.</li>
+        <li><span class="menu">📋 전체 일정 확인</span>: 오늘 일정 목록을 보고 바로 고칠 수 있어요.</li>
+        <li>말풍선이 떠 있을 때 캐릭터를 <b>한 번 더 클릭</b>하면 닫혀요. 45초 뒤엔 저절로 닫혀요.</li>
+      </ul>
+      <div class="box tip"><p>앱을 켜자마자 오늘 일정을 미리 받아 두기 때문에, 첫 클릭부터 바로 대답해요. 같은 일정은 다시 물어봐도 즉시 나와요.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 07 AI 대화 · 혼잣말 ───────────── -->
+<section class="page">
+  <h2><span class="no">07</span>사용법 ② AI 대화 · 혼잣말</h2>
+  <div class="row">
+    <div class="col" style="flex:0 0 58mm">
+      <div class="shot"><img src="img/bubble-chat.png"></div>
+      <div class="cap">AI 대화</div>
+    </div>
+    <div class="col">
+      <h3 style="margin-top:0">대화하기</h3>
+      <ol class="steps">
+        <li>AI 대화 캐릭터를 클릭하면 말풍선에 입력창이 열려요.</li>
+        <li>하고 싶은 말을 쓰고 <span class="key">Enter</span></li>
+        <li>캐릭터 말투로 대답해요 (한국어 + 일본어). 앞의 대화를 기억하고 이어서 말해요.</li>
+      </ol>
+      <p>질문하면 실제로 도움이 되는 답을 주되, 캐릭터답게 짧게 대답해요. 우사기처럼 외침 위주인 캐릭터는 외침 사이에 핵심만 툭 던져요.</p>
+    </div>
+  </div>
+  <div class="row" style="margin-top:6mm">
+    <div class="col" style="flex:0 0 58mm">
+      <div class="shot"><img src="img/bubble-chatter.png"></div>
+      <div class="cap">혼잣말</div>
+    </div>
+    <div class="col">
+      <h3 style="margin-top:0">혼잣말</h3>
+      <p>AI 대화 캐릭터가 가끔 지금 시간대에 듣고 싶을 만한 한마디를 말풍선으로 띄워요. 12초 뒤 저절로 사라져요.</p>
+      <table>
+        <tr><th>시간</th><th>직장인</th><th>학생</th></tr>
+        <tr><td>아침</td><td>출근길, 커피</td><td>등교, 아침밥</td></tr>
+        <tr><td>11시~</td><td>배고픔, 점심 메뉴</td><td>4교시 배고픔, 급식</td></tr>
+        <tr><td>오후</td><td>식곤증, 당 충전</td><td>졸음, 조금만 버티기</td></tr>
+        <tr><td>저녁</td><td>퇴근, 오늘도 수고했어</td><td>하교·학원, 숙제</td></tr>
+        <tr><td>밤</td><td colspan="2">잘 시간이야, 폰 그만 보고 자기</td></tr>
+      </table>
+      <p>빈도는 <span class="menu">내 정보·혼잣말 설정…</span> 에서, 지금 바로 듣고 싶으면 우클릭 → <span class="menu">혼잣말 지금 듣기</span></p>
+    </div>
+  </div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 08 캐릭터 바꾸기 · 우클릭 ───────────── -->
+<section class="page">
+  <h2><span class="no">08</span>캐릭터 바꾸기 · 우클릭 메뉴</h2>
+  <h3>마우스로 할 수 있는 것</h3>
+  <table>
+    <tr><th style="width:30%">동작</th><th>하는 일</th></tr>
+    <tr><td>클릭</td><td>말풍선 열기 (일정 브리핑 / 대화창). 열려 있으면 닫기</td></tr>
+    <tr><td>꾹 눌러 끌기</td><td>캐릭터 옮기기. 다음에 켤 때도 그 자리에 떠요</td></tr>
+    <tr><td>우클릭</td><td>메뉴 열기 (아래 표)</td></tr>
+    <tr><td><span class="key">Esc</span></td><td>말풍선 닫기</td></tr>
+  </table>
+  <h3>우클릭 메뉴</h3>
+  <table>
+    <tr><th style="width:36%">메뉴</th><th>하는 일</th></tr>
+    <tr><td>캐릭터 바꾸기</td><td>이 역할의 캐릭터를 7종 중에서 바꿔요. 바꾼 캐릭터의 말투로 바로 말해요</td></tr>
+    <tr><td>○○ 모습 고르기…</td><td>평소 모습 / 말할 때 모습 그림 고르기, 내 이미지 추가 (09 참고)</td></tr>
+    <tr><td>오늘 일정 적기</td><td>(일정 비서) 일정 입력칸 열기</td></tr>
+    <tr><td>혼잣말 지금 듣기</td><td>(AI 대화) 혼잣말 한마디 바로 듣기</td></tr>
+    <tr><td>내 정보·혼잣말 설정…</td><td>이름, 직장인/학생, 혼잣말 빈도</td></tr>
+    <tr><td>AI 키 설정…</td><td>AI 서비스·키 바꾸기, 연결 테스트</td></tr>
+    <tr><td>고급</td><td>설정 파일 열기, 이미지 폴더 열기, 다시 불러오기, 다시 시작</td></tr>
+    <tr><td>정보</td><td>버전, 비공식·비영리 고지, 개인정보 안내</td></tr>
+    <tr><td>종료</td><td>프로그램 끄기</td></tr>
+  </table>
+  <div class="box tip"><p>일정 비서와 AI 대화에 <b>같은 캐릭터</b>를 골라도 돼요. 예: 둘 다 하치와레</p></div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 09 이미지 ───────────── -->
+<section class="page">
+  <h2><span class="no">09</span>캐릭터 이미지 가져오기 · 배경 없애기</h2>
+  <p>저작권 때문에 <b>프로그램 안에는 캐릭터 그림이 들어 있지 않아요.</b> 대신 아래처럼 준비돼요.</p>
+  <table>
+    <tr><th style="width:34%">캐릭터</th><th>그림</th></tr>
+    <tr><td>치이카와 · 하치와레 · 우사기 · 모몽가</td><td>처음 켤 때 팬 사이트의 예시 GIF를 <b>자동으로</b> 받아 와요. 모습 고르기에서 다른 예시로 바꿀 수 있어요</td></tr>
+    <tr><td>쿠리만쥬 · 시사 · 랏코</td><td>임시 그림으로 나와요. <b>직접 이미지를 넣어 주세요</b> (아래 순서)</td></tr>
+  </table>
+  <div class="row">
+    <div class="col">
+      <h3>① 이미지 구하기</h3>
+      <ul>
+        <li>팬 사이트 <code>chiikawawallpaper.com/ko/gif</code> → 캐릭터별 보기에서 원하는 GIF 클릭 → 다운로드</li>
+        <li>또는 이미지 검색에서 <b>"캐릭터 이름 + png 투명"</b>으로 찾기</li>
+      </ul>
+      <div class="box note"><div class="box-title">✅ 잘 어울리는 이미지</div>
+        <ul>
+          <li><b>배경이 투명</b>한 PNG·GIF (체크무늬 배경으로 보이는 것)</li>
+          <li><b>몸 전체</b>가 나온 그림 (얼굴만 크게 나온 장면 ✕)</li>
+          <li>한 캐릭터만 있는 그림</li>
+        </ul></div>
+    </div>
+    <div class="col" style="flex:0 0 70mm">
+      <div class="shot"><img src="img/picker.png"></div>
+      <div class="cap">모습 고르기 창</div>
+    </div>
+  </div>
+  <h3>③ 앱에 넣기 <small style="font-weight:400;color:#8a786b">(배경 없애기는 다음 쪽)</small></h3>
+  <ol class="steps">
+    <li>캐릭터 우클릭 → <span class="menu">캐릭터 바꾸기</span> 로 원하는 캐릭터를 먼저 골라요.</li>
+    <li>우클릭 → <span class="menu">○○ 모습 고르기…</span> → 위에서 <span class="menu">🙂 평소 모습</span> 또는 <span class="menu">💬 말할 때 모습</span> 선택</li>
+    <li><span class="menu">＋ 내 이미지 추가</span> 로 파일 선택 → 추가된 그림(“내 이미지” 표시)을 누르면 바로 바뀌어요.</li>
+  </ol>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<section class="page">
+  <h2><span class="no">09</span>배경 없애기</h2>
+  <p>받은 이미지에 <b>흰 바탕이나 배경</b>이 있으면 바탕화면 위에 네모난 그림으로 떠요. 아래 방법으로 배경을 지운 뒤 <b>PNG</b>로 저장해서 넣어 주세요.</p>
+  <table>
+    <tr><th style="width:26%">도구</th><th>방법</th></tr>
+    <tr><td><b>Windows 그림판</b><br><small>PNG·JPG 한 장</small></td><td>이미지 우클릭 → <span class="menu">연결 프로그램 → 그림판</span> → 위쪽 <span class="menu">이미지</span> → <span class="menu">배경 제거</span> → <span class="menu">파일 → 다른 이름으로 저장 → PNG</span><br><small>그림판 메뉴 위치는 업데이트에 따라 조금 다를 수 있어요. 원본을 덮어쓰지 않게 "다른 이름으로 저장"하세요.</small></td></tr>
+    <tr><td><b>맥 미리보기</b><br><small>PNG·JPG</small></td><td>이미지 더블클릭(미리보기) → 위 메뉴 <span class="menu">도구 → 배경 제거</span> → 저장<br><small>여러 장은 Finder에서 선택 → 우클릭 → <span class="menu">빠른 동작 → 배경 제거</span></small></td></tr>
+    <tr><td><b>remove.bg</b><br><small>웹, 사진 한 장</small></td><td><code>remove.bg</code> 에 이미지 올리기 → 자동으로 배경 제거 → <span class="menu">Download</span></td></tr>
+    <tr><td><b>ezgif</b><br><small>웹, 움직이는 GIF</small></td><td><code>ezgif.com</code> → <span class="menu">Remove background</span> → GIF 올리기 → 지울 배경색 선택(흰색 등) → <b>fuzz</b>로 비슷한 색까지 범위 조절 → <span class="menu">Submit</span> → 저장<br><small><b>배경이 한 가지 색(흰 바탕 등)일 때만</b> 깔끔해요. 나무·하늘이 있는 애니 장면 GIF는 배경이 남아서 추천하지 않아요. 결과가 깜빡이면 ezgif의 <span class="menu">optimize → unoptimize</span> 를 먼저 해 보세요.</small></td></tr>
+  </table>
+  <div class="box tip"><div class="box-title">💡 어떤 방법을 고를까요?</div>
+    <ul>
+      <li><b>멈춰 있는 그림(PNG·JPG)</b> → 그림판(Windows) · 미리보기(맥) · remove.bg 중 편한 것</li>
+      <li><b>움직이는 GIF + 흰색 같은 단색 배경</b> → ezgif</li>
+      <li><b>움직이는 GIF + 나무·하늘 같은 복잡한 배경</b> → 깔끔하게 지우기 어려워요. 같은 캐릭터의 투명 PNG를 찾는 걸 추천해요.</li>
+    </ul></div>
+  <div class="box warn"><p>원본 파일은 남겨 두고 <b>다른 이름으로 저장</b>하세요. JPG로 저장하면 투명한 부분이 다시 흰색이 돼요. 꼭 <b>PNG</b>(움직이는 건 GIF)로 저장하세요.</p></div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 11 문제 해결 ───────────── -->
+<section class="page">
+  <h2><span class="no">10</span>문제 해결</h2>
+  <table>
+    <tr><th style="width:34%">증상</th><th>해결</th></tr>
+    <tr><td>설치할 때 "PC 보호" 창이 떠요</td><td><span class="menu">추가 정보 → 실행</span> (03 참고)</td></tr>
+    <tr><td>캐릭터가 안 보여요</td><td>이미 켜져 있을 수 있어요. 화면 오른쪽 아래를 확인하고, 그래도 없으면 시작 메뉴에서 다시 실행하세요. 여러 모니터를 쓰다 하나를 뺐다면 우클릭 → <span class="menu">고급 → 설정 파일 열기</span> 에서 <code>"positions"</code> 내용을 <code>{}</code> 로 비우고 다시 시작하세요.</td></tr>
+    <tr><td>"AI 연결 실패: 429"</td><td>무료 한도(1분당 요청 수)를 넘었어요. 1분쯤 뒤 다시 눌러 주세요. 자주 그러면 혼잣말 빈도를 <b>가끔</b>으로 낮추세요.</td></tr>
+    <tr><td>"AI 연결 실패: 503 / 응답 시간 초과"</td><td>AI 서버가 혼잡해요. 앱이 자동으로 다른 모델로 넘어가니 잠시 뒤 다시 시도하세요.</td></tr>
+    <tr><td>"400 / API key not valid"</td><td>키가 틀렸거나 삭제됐어요. <span class="menu">AI 키 설정…</span> 에서 새 키를 넣고 연결 테스트하세요.</td></tr>
+    <tr><td>캐릭터가 임시 그림으로 나와요</td><td>인터넷 연결을 확인하세요. 쿠리만쥬·시사·랏코는 직접 이미지를 넣어야 해요 (09 참고).</td></tr>
+    <tr><td>말풍선이 화면 위로 잘려요</td><td>캐릭터를 꾹 눌러 화면 아래쪽으로 옮겨 주세요. 말풍선은 캐릭터 위로 떠요.</td></tr>
+    <tr><td>컴퓨터가 느려진 것 같아요</td><td>캐릭터는 가끔만 움직이도록 만들어 부담이 작아요(CPU 1~5%). 그래도 느리면 우클릭 → <span class="menu">종료</span> 후 필요할 때만 켜 주세요.</td></tr>
+    <tr><td>처음부터 다시 설정하고 싶어요</td><td>프로그램을 끄고 설정 폴더의 <code>config.json</code> 을 지운 뒤 다시 켜요.<br>Windows: <code>%APPDATA%\치이카와 에이전트</code> · 맥: <code>~/Library/Application Support/치이카와 에이전트</code></td></tr>
+  </table>
+  <div class="box tip"><p>문제가 계속되면 설정 폴더의 <code>agent.log</code> 파일에 기록이 남아 있어요. 다운로드 페이지의 <b>Issues</b>에 증상과 함께 남겨 주세요. (로그에 API 키는 기록되지 않아요)</p></div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+<!-- ───────────── 12 고지 ───────────── -->
+<section class="page">
+  <h2><span class="no">11</span>개인정보 · 저작권 안내</h2>
+  <div class="row">
+    <div class="col">
+      <h3 style="margin-top:0">저작권</h3>
+      <ul>
+        <li>「ちいかわ」 캐릭터와 관련된 모든 권리는 원작자 <b>nagano</b> 및 권리자에게 있어요.</li>
+        <li>이 프로그램은 개인이 만든 <b>비공식 팬메이드</b>이며, <b>비영리·무료</b>로만 배포해요. 판매·광고 등 상업적으로 이용하지 않아요.</li>
+        <li>프로그램에는 캐릭터 이미지가 들어 있지 않아요. 예시 이미지는 사용자가 고를 때 팬 사이트에서 사용자 컴퓨터가 직접 받아 와요.</li>
+        <li>직접 넣은 이미지는 개인적으로만 사용하고, 다시 배포하지 말아 주세요.</li>
+        <li>권리자의 요청이 있으면 즉시 배포를 중단해요.</li>
+      </ul>
+      <h3>개인정보</h3>
+      <ul>
+        <li>이름·일정·대화는 <b>사용자가 고른 AI 서비스로만</b> 직접 전송돼요. 개발자 서버를 거치지 않고, 개발자는 볼 수 없어요.</li>
+        <li>API 키·이름·일정은 이 컴퓨터의 설정 폴더에만 저장돼요.</li>
+        <li>Gemini 무료 등급은 입력 내용이 Google 서비스 개선에 쓰일 수 있으니, 민감한 정보(비밀번호·주민번호·회사 기밀 등)는 적지 마세요.</li>
+      </ul>
+    </div>
+    <div class="col" style="flex:0 0 64mm">
+      <div class="shot"><img src="img/settings-about.png"></div>
+      <div class="cap">우클릭 → 정보</div>
+    </div>
+  </div>
+  <div class="box note" style="margin-top:8mm">
+    <div class="box-title">만든 사람 · 피드백</div>
+    <p>버그·아이디어는 다운로드 페이지(<code>github.com/chiikawa-agent/chiikawa-agent</code>)의 Issues에 남겨 주세요.</p>
+  </div>
+  <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
+</section>
+
+</body>
+</html>

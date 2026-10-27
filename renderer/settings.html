@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>치이카와 에이전트 설정</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <nav>
+    <button class="tab" data-tab="profile">내 정보</button>
+    <button class="tab active" data-tab="ai">AI 연결</button>
+    <button class="tab" data-tab="about">정보</button>
+  </nav>
+
+  <section id="profile" class="panel">
+    <p class="lead" id="welcome">캐릭터들이 나에게 맞춰 말할 수 있게 알려 주세요.</p>
+
+    <label for="name">불리고 싶은 이름</label>
+    <input id="name" maxlength="12" placeholder="예: 포니, 포니님, 포니짱">
+
+    <label>나는</label>
+    <div class="seg" id="type">
+      <button data-v="worker">💼 직장인</button>
+      <button data-v="student">🎒 학생</button>
+    </div>
+    <p class="hint">시간대별 혼잣말과 대화 주제가 달라져요. (예: 11시 직장인 → "배고프다…점심 뭐 먹지?")</p>
+
+    <label for="chatter">혼잣말 (대화 캐릭터가 가끔 한마디)</label>
+    <select id="chatter">
+      <option value="often">자주 (15~30분마다)</option>
+      <option value="sometimes">가끔 (40~80분마다)</option>
+      <option value="off">끄기</option>
+    </select>
+
+    <div id="profileStatus" class="status"></div>
+    <div class="actions">
+      <button id="saveProfile" class="primary">저장</button>
+    </div>
+  </section>
+
+  <section id="ai" class="panel active">
+    <p class="lead">캐릭터가 말하려면 AI 키가 필요해요.<br>키는 이 컴퓨터에만 저장돼요.</p>
+
+    <label>AI 서비스</label>
+    <select id="provider">
+      <option value="gemini">Google Gemini (무료 등급 있음 · 추천)</option>
+      <option value="claude">Anthropic Claude (유료 충전)</option>
+      <option value="openai">OpenAI (유료 충전)</option>
+    </select>
+
+    <label>API 키</label>
+    <div class="keyRow">
+      <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="여기에 붙여넣기">
+      <button id="toggle" class="ghost" title="보기/숨기기">👁</button>
+    </div>
+    <button id="getKey" class="link">🔑 키 발급받으러 가기</button>
+
+    <div id="status" class="status"></div>
+
+    <div class="actions">
+      <button id="test" class="ghost">연결 테스트</button>
+      <button id="save" class="primary">저장</button>
+    </div>
+    <p class="hint">키 없이도 일정 적기·목록 보기는 돼요. 캐릭터 말투 브리핑과 대화에만 키가 쓰여요.</p>
+  </section>
+
+  <section id="about" class="panel">
+    <h2>치이카와 에이전트</h2>
+    <p class="ver" id="ver"></p>
+    <div class="notice">
+      <p><b>비공식 팬메이드 프로그램이에요.</b></p>
+      <ul>
+        <li>「ちいかわ」 캐릭터와 관련된 모든 권리는 원작자 nagano 및 권리자에게 있어요.</li>
+        <li>비영리·무료로만 배포되며, 판매·광고 등 상업적으로 이용하지 않아요.</li>
+        <li>프로그램에는 캐릭터 이미지가 들어 있지 않아요. 예시 이미지는 사용자가 고를 때 팬 사이트(chiikawawallpaper.com)에서 직접 받아 오고, 그 밖의 이미지는 사용자가 개인적으로 준비해 넣는 방식이에요.</li>
+        <li>권리자의 요청이 있으면 즉시 배포를 중단해요.</li>
+      </ul>
+      <p><b>개인정보</b></p>
+      <ul>
+        <li>입력한 일정과 대화는 사용자가 고른 AI 서비스로만 직접 전송돼요. 개발자 서버를 거치지 않아요.</li>
+        <li>Gemini 무료 등급은 입력 내용이 Google 서비스 개선에 쓰일 수 있으니 민감한 정보는 적지 마세요.</li>
+      </ul>
+    </div>
+  </section>
+
+  <script src="settings.js"></script>
+</body>
+</html>
