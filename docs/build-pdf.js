@@ -12,6 +12,13 @@ const OUT = path.join(__dirname, '치이카와 에이전트 설치 방법.pdf');
 const R2 = 'https://r2.chiikawawallpaper.com/wallpaper/gif/';
 fs.mkdirSync(IMG, { recursive: true });
 
+// 출력 받는 쪽이 먼저 닫혀도(EPIPE) 오류 창을 띄우지 않기
+for (const s of [process.stdout, process.stderr]) s.on('error', () => {});
+// 다른 Electron 실행과 임시 저장 공간이 겹쳐 멈추지 않게 전용 폴더 사용
+app.setPath('userData', path.join(require('os').tmpdir(), 'chiikawa-guide-build'));
+// 2분 넘게 걸리면 멈춘 것으로 보고 종료 (창이 남아 있지 않게)
+setTimeout(() => { console.log('시간 초과로 종료'); app.exit(1); }, 120000).unref();
+
 // 캡처에 쓸 캐릭터 그림: 개발 PC에 받아 둔 파일이 있으면 그걸, 없으면 원래 주소
 function art(charId, file) {
   const local = path.join(ROOT, 'characters', charId, file);
