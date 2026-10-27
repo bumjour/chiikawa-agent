@@ -17,6 +17,8 @@ public class D {
   [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
   [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
   [DllImport("user32.dll")] public static extern void mouse_event(uint f, uint x, uint y, uint d, UIntPtr e);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
 }
 "@
 [D]::SetProcessDPIAware() | Out-Null
@@ -31,6 +33,8 @@ while ($true) {
     'rdown'  { [D]::mouse_event(8,0,0,0,[UIntPtr]::Zero) }
     'rup'    { [D]::mouse_event(16,0,0,0,[UIntPtr]::Zero) }
     'keys'   { [System.Windows.Forms.SendKeys]::SendWait($l.Substring(5)) }
+    'front'  { $w = Get-Process $p[1] -ErrorAction SilentlyContinue | ? { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+               if ($w) { [D]::ShowWindow($w.MainWindowHandle, 3) | Out-Null; [D]::SetForegroundWindow($w.MainWindowHandle) | Out-Null } }
   }
   [Console]::Out.WriteLine('ok')
 }
@@ -62,6 +66,7 @@ function startInput() {
     async click() { await send('down'); await wait(70); await send('up'); },
     async rightClick() { await send('rdown'); await wait(70); await send('rup'); },
     async keys(k) { await send('keys ' + k); },
+    async front(processName) { await send('front ' + processName); }, // 그 프로그램 창을 최대화해서 맨 앞으로
     close() { try { ps.stdin.write('exit\r\n'); } catch { /* 무시 */ } },
   };
 }
@@ -109,7 +114,7 @@ async function startRecorder(outFile) {
 
 // ---- 시나리오 ----
 async function run(ctx) {
-  const { pets, config, talkSchedule, makeChatter, currentChar, log } = ctx;
+  const { pets, config, talkSchedule, makeChatter, askChar, systemPrompt, imageFor, log } = ctx;
   const say = (m) => { console.log('[demo] ' + m); log(`[demo] ${m}`); };
   let aborted = false;
   globalShortcut.register('CommandOrControl+Alt+Q', () => { aborted = true; say('중단 요청'); });
@@ -133,31 +138,95 @@ async function run(ctx) {
   const setChar = async (role, id) => { config.update({ characters: { [role]: id } }); pets[role].reload(); await wait(700); };
   const step = async (ms) => { if (aborted) throw new Error('aborted'); await wait(ms); };
 
-  // 준비: 말풍선 닫기, 기본 캐릭터, AI 답 미리 받아 두기 (영상에서 기다리는 시간 줄이기)
-  say('준비 중… (AI 답을 미리 받아 둬요)');
+  const { CHARACTERS } = require('./characters');
+  const LINEUP = ['chiikawa', 'hachiware', 'usagi', 'momonga', 'kurimanju', 'shisa', 'rakko'];
+  // AI 답이 안 올 때 쓰는 대사 (캐릭터 말투)
+  const FALLBACK = {
+    chiikawa: { ko: '와아…! 포니…!', ja: 'ワァ…！ポニー…！' },
+    hachiware: { ko: '있잖아~ 포니, 오늘도 힘내자!', ja: 'ねえねえポニー、今日もがんばろ！' },
+    usagi: { ko: '야하! 포니! 우라!', ja: 'ヤハ！ポニー！ウラ！' },
+    momonga: { ko: '포니! 나 칭찬해!', ja: 'ポニー！ほめろ！' },
+    kurimanju: { ko: '하아—ッ! 포니, 수고했어.', ja: 'ハァーッ！ポニー、おつかれ。' },
+    shisa: { ko: '포니 님, 기쁘시사!', ja: 'ポニーさん、うれシーサー！' },
+    rakko: { ko: '그렇군… 포니, 가자.', ja: 'なるほど…ポニー、行くぞ。' },
+  };
+  const wa = screen.getPrimaryDisplay().workArea;
+  const cx = wa.x + wa.width / 2;
+  const cy = wa.y + wa.height / 2;
+  const PET_FROM_TOP = 560 - 22 - 75; // 캐릭터 창 위쪽에서 캐릭터 중심까지 (창 높이 560)
+
+  // 준비: 기본 캐릭터, AI 답 미리 받아 두기 (영상에서 기다리는 시간 줄이기)
+  say('준비 중… (캐릭터 7종 대사와 일정 답을 미리 받아 둬요)');
   const orig = { ...config.load().characters };
+  const origPos = { schedule: pets.schedule.getPosition(), chat: pets.chat.getPosition() };
   await setChar('schedule', 'hachiware');
   await setChar('chat', 'usagi');
-  const chatterLine = await makeChatter('usagi').catch(() => ({ ko: '야하! 포니, 점심 뭐야!', ja: 'ヤハ！ポニー、昼メシ何！' }));
+  for (const id of LINEUP) imageFor(id, 'idle'); // 아직 안 받은 그림이 있으면 받기 시작
+  const cast = [];
+  for (const id of LINEUP) { // 무료 한도에 걸리지 않게 하나씩
+    const line = await askChar(config.load(), {
+      system: systemPrompt(id, '너는 사용자 곁에 늘 있는 친구야.'),
+      messages: [{ role: 'user', text: '사용자에게 반갑게 인사하는 한마디를 캐릭터 말투로 해 줘. 한국어 기준 16자 이내로 아주 짧게, 이름을 불러 줘.' }],
+    }).catch(() => FALLBACK[id]);
+    cast.push({ id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: line.ko, ja: line.ja });
+    say(`${CHARACTERS[id].nameKo}: ${line.ko}`);
+  }
+  for (const c of cast) c.image = imageFor(c.id, 'idle');
+  const chatterLine = await makeChatter('usagi').catch(() => FALLBACK.usagi);
   await talkSchedule('hachiware', 'all').catch(() => {});
   await talkSchedule('hachiware', 'remaining').catch(() => {});
   for (const w of Object.values(pets)) await w.webContents.executeJavaScript('closeBubble(), true');
 
+  // 7종 한 줄 세우기 창 (화면 정가운데, 클릭은 통과)
+  const lineup = new BrowserWindow({
+    x: wa.x, y: Math.round(cy - PET_FROM_TOP), width: wa.width, height: 560, show: false,
+    transparent: true, frame: false, hasShadow: false, backgroundColor: '#00000000',
+    resizable: false, skipTaskbar: true, focusable: false, alwaysOnTop: true,
+    webPreferences: { contextIsolation: true, sandbox: true },
+  });
+  lineup.setAlwaysOnTop(true, 'floating');
+  lineup.setIgnoreMouseEvents(true);
+  await lineup.loadFile(path.join(__dirname, '..', 'renderer', 'lineup.html'));
+  await lineup.webContents.executeJavaScript(`setLineup(${JSON.stringify(cast)}), true`);
+
+  // 두 캐릭터는 화면 가운데에 나란히 (하치와레 왼쪽, 우사기 오른쪽)
+  const placePets = () => {
+    pets.schedule.setPosition(Math.round(cx - 140 - 170), Math.round(cy - PET_FROM_TOP));
+    pets.chat.setPosition(Math.round(cx + 140 - 170), Math.round(cy - PET_FROM_TOP));
+  };
+  pets.schedule.hide();
+  pets.chat.hide();
+  lineup.showInactive();
+
   const input = startInput();
   const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
   const out = path.join(app.getPath('videos'), `치이카와-데모-${stamp}`);
-  // 시작 위치: 화면 가운데쯤
-  const wa = screen.getPrimaryDisplay().workArea;
-  await input.moveTo(wa.x + wa.width * 0.45, wa.y + wa.height * 0.45, 200);
+  // 배경: 엑셀이 켜져 있으면 최대화해서 맨 앞으로 (터미널 등 다른 창을 가리도록)
+  await input.front('EXCEL');
+  await wait(1200);
+  await input.moveTo(wa.x + wa.width * 0.82, wa.y + wa.height * 0.2, 200); // 커서는 구석에 대기
   await wait(800);
   const rec = await startRecorder(out);
   say('녹화 시작');
 
   try {
-    await step(1500);
-    // ① 후킹: 우사기 혼잣말
+    await step(1000);
+    // ⓪ 오프닝: 7종이 차례로 한마디씩
+    for (let i = 0; i < cast.length; i++) {
+      await lineup.webContents.executeJavaScript(`speak(${i}), true`);
+      await step(700);
+    }
+    await step(2600);
+    // 두 캐릭터만 가운데에 남기기
+    lineup.hide();
+    placePets();
+    pets.schedule.showInactive();
+    pets.chat.showInactive();
+    await step(900);
+    // ① 우사기 혼잣말
     pets.chat.webContents.send('pet:chatter', chatterLine);
     await step(3200);
+    await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     // ② 하치와레 클릭 → 오늘 일정 브리핑
     await clickOn('schedule', '#pet');
     await step(5200);
@@ -168,7 +237,6 @@ async function run(ctx) {
     await clickOn('schedule', '#pet', 500);
     await step(700);
     // ④ 우사기 대화
-    await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     await clickOn('chat', '#pet');
     await step(1200);
     clipboard.writeText('오늘 야근인데 저녁 뭐 먹지?');
@@ -185,11 +253,13 @@ async function run(ctx) {
     await input.keys('{RIGHT}'); await step(600);
     await input.keys('{DOWN}{DOWN}{DOWN}'); await step(600);   // 하위 메뉴는 치이카와부터 → 하치와레 → 우사기 → 모몽가
     await input.keys('{ENTER}');
-    await step(1300);
-    // ⑥ 캐릭터 몽타주
-    for (const id of ['kurimanju', 'shisa', 'rakko', 'chiikawa']) { await setChar('chat', id); await step(650); }
-    await setChar('chat', 'usagi');
-    await step(1500);
+    await step(2000);
+    // ⑥ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
+    await input.moveTo(wa.x + wa.width * 0.82, wa.y + wa.height * 0.2, 500);
+    pets.schedule.hide();
+    pets.chat.hide();
+    lineup.showInactive();
+    await step(3500);
   } catch (err) {
     if (err.message !== 'aborted') say('오류: ' + err.message);
   }
@@ -197,8 +267,13 @@ async function run(ctx) {
   const file = await rec.stop();
   input.close();
   globalShortcut.unregisterAll();
+  lineup.destroy();
   await setChar('schedule', orig.schedule);
   await setChar('chat', orig.chat);
+  pets.schedule.setPosition(...origPos.schedule);
+  pets.chat.setPosition(...origPos.chat);
+  pets.schedule.showInactive();
+  pets.chat.showInactive();
   say('녹화 저장: ' + file);
   require('electron').shell.showItemInFolder(file);
 }

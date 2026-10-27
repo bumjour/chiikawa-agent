@@ -516,7 +516,7 @@ app.whenReady().then(() => {
   // 홍보 영상용 자동 시연·녹화 (npm run demo)
   if (process.argv.includes('--demo')) {
     clearTimeout(chatterTimer); // 시연 중에 혼잣말이 끼어들지 않게
-    setTimeout(() => require('./src/demo').run({ pets, config, talkSchedule, makeChatter, currentChar, log })
+    setTimeout(() => require('./src/demo').run({ pets, config, talkSchedule, makeChatter, askChar, systemPrompt, imageFor, log })
       .catch((err) => log(`[demo] 실패: ${err.message}`)), 3000);
   }
 });
