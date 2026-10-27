@@ -137,7 +137,7 @@ const DEMO_NAME = { ko: '서연', ja: 'ソヨン' }; // 대법원 통계상 가�
 const Z = 1.6; // 세로 영상에서 휴대폰으로도 읽히게 캐릭터·말풍선 확대 배율
 
 async function run(ctx) {
-  const { pets, config, talkSchedule, makeChatter, askChar, systemPrompt, imageFor, log } = ctx;
+  const { pets, config, talkSchedule, makeChatter, imageFor, log } = ctx;
   const say = (m) => { console.log('[demo] ' + m); log(`[demo] ${m}`); };
   let aborted = false;
   globalShortcut.register('CommandOrControl+Alt+Q', () => { aborted = true; say('중단 요청'); });
@@ -184,7 +184,7 @@ async function run(ctx) {
   };
 
   // ── 준비 (아직 가로 화면): 예시 이름·기본 캐릭터, AI 답 미리 받아 두기 ──
-  say('준비 중… (캐릭터 7종 대사와 일정 답을 미리 받아 둬요, 약 20초)');
+  say('준비 중… (혼잣말과 일정 답을 미리 받아 둬요, 약 10초)');
   const origChars = { ...config.load().characters };
   const origProfile = { ...config.load().profile };
   const origPos = { schedule: pets.schedule.getBounds(), chat: pets.chat.getBounds() };
@@ -192,12 +192,19 @@ async function run(ctx) {
   await setChar('schedule', 'hachiware');
   await setChar('chat', 'usagi');
   for (const id of LINEUP) imageFor(id, 'idle'); // 아직 안 받은 그림이 있으면 받기 시작
+  // 오프닝 대사: 후킹용 고정 대사 (캐릭터 말버릇 × 직장인의 하루: 출근 → 퇴사 고민 → 야근 → 칭찬 → 한 잔 → 월요일 → 칼퇴)
+  const HOOK = {
+    chiikawa: { ko: '출근… 싫어! ㅜㅜ', ja: '出勤…ヤダー！😭' },
+    hachiware: { ko: '있잖아~ 퇴사라는 거… 할까?', ja: 'ねえねえ、退職ってやつ…しちゃう？' },
+    usagi: { ko: '하아?! 또 야근?! 우라!!', ja: 'ハァ？！また残業？！ウラ！！' },
+    momonga: { ko: '출근한 나, 칭찬해! 빨리!', ja: '出勤したボクをほめろ！はやく！' },
+    kurimanju: { ko: '하아—ッ! 퇴근 후 한 잔…', ja: 'ハァーッ！仕事終わりの一杯…' },
+    shisa: { ko: '월요일이어도 기쁘시사!!', ja: '月曜日でもうれシーサー！！' },
+    rakko: { ko: '그렇군… 칼퇴가 답이다.', ja: 'なるほど…定時退社が正解だ。' },
+  };
   const cast = [];
-  for (const id of LINEUP) { // 무료 한도에 걸리지 않게 하나씩
-    const line = await askChar(config.load(), {
-      system: systemPrompt(id, '너는 사용자 곁에 늘 있는 친구야.'),
-      messages: [{ role: 'user', text: '사용자에게 반갑게 인사하는 한마디를 캐릭터 말투로 해 줘. 한국어 기준 16자 이내로 아주 짧게, 이름을 불러 줘.' }],
-    }).catch(() => FALLBACK[id]);
+  for (const id of LINEUP) {
+    const line = HOOK[id] || FALLBACK[id];
     cast.push({ id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: line.ko, ja: line.ja });
     say(`${CHARACTERS[id].nameKo}: ${line.ko}`);
   }
