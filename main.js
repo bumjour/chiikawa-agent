@@ -488,9 +488,16 @@ ipcMain.on('pet:context-menu', (event) => {
 });
 
 // 이미 켜져 있으면 하나 더 띄우지 않기
-if (!app.requestSingleInstanceLock()) app.quit();
+// (시연 모드로 켜면 켜져 있던 앱을 끄고, 잠시 뒤 시연용으로 다시 켜요)
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  if (process.argv.includes('--demo')) setTimeout(() => { app.relaunch(); app.exit(0); }, 2000);
+  else app.quit();
+}
+app.on('second-instance', (_e, argv) => { if (argv.includes('--demo')) app.quit(); });
 
 app.whenReady().then(() => {
+  if (!gotLock) return;
   if (process.platform === 'darwin' && app.dock) app.dock.hide(); // 맥 Dock에 아이콘 안 띄우기
   createPet('schedule', 1);
   createPet('chat', 0);
@@ -505,6 +512,13 @@ app.whenReady().then(() => {
   }
   if (cfg.profile.name && cfg.profile.nameJaFor !== cfg.profile.name) updateNameJa();
   scheduleChatter(3 * 60 * 1000); // 첫 혼잣말은 켜고 3분 뒤
+
+  // 홍보 영상용 자동 시연·녹화 (npm run demo)
+  if (process.argv.includes('--demo')) {
+    clearTimeout(chatterTimer); // 시연 중에 혼잣말이 끼어들지 않게
+    setTimeout(() => require('./src/demo').run({ pets, config, talkSchedule, makeChatter, currentChar, log })
+      .catch((err) => log(`[demo] 실패: ${err.message}`)), 3000);
+  }
 });
 
 app.on('window-all-closed', () => app.quit());
