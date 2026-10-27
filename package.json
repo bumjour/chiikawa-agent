@@ -58,7 +58,8 @@
       "artifactName": "ChiikawaAgent-mac-${version}-${arch}.${ext}",
       "category": "public.app-category.productivity",
       "icon": "build/icon.png",
-      "identity": "-"
+      "identity": "-",
+      "hardenedRuntime": false
     }
   },
   "devDependencies": {

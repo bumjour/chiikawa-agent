@@ -5,7 +5,12 @@ name: release
 on:
   push:
     tags: ['v*']
-  workflow_dispatch: # 수동 실행: 설치 파일만 만들어 보기 (Releases에는 안 올림)
+  workflow_dispatch: # 수동 실행: tag를 비우면 설치 파일만 만들어 보고, 적으면 그 버전 Releases 파일을 새로 만든 걸로 교체
+    inputs:
+      tag:
+        description: '파일을 교체할 Releases 태그 (예: v0.2.1). 비우면 올리지 않음'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -45,7 +50,7 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -54,8 +59,10 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@v2
         with:
-          name: 치이카와 에이전트 ${{ github.ref_name }}
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: 치이카와 에이전트 ${{ inputs.tag || github.ref_name }}
           files: dist/*
+          overwrite_files: true
           body: |
             ## 다운로드
             | 컴퓨터 | 파일 |
