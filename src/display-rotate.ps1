@@ -1,6 +1,7 @@
-# 주 모니터 방향 바꾸기 (홍보 영상 세로 녹화용)
-# 사용: powershell -File display-rotate.ps1 portrait | landscape
-# 문제가 생기면: 설정 → 시스템 → 디스플레이 → 디스플레이 방향 → 가로
+# Rotate the primary display (used for vertical demo recording).
+# Usage: powershell -File display-rotate.ps1 portrait | landscape
+# Keep this file ASCII-only: Windows PowerShell 5.1 misreads UTF-8 without BOM.
+# Manual fix if stuck: Settings > System > Display > Display orientation > Landscape
 param([string]$mode = 'landscape')
 Add-Type @"
 using System; using System.Runtime.InteropServices;
@@ -24,11 +25,12 @@ public class Rot {
 $dm = New-Object Rot+DEVMODE
 $dm.dmSize = [System.Runtime.InteropServices.Marshal]::SizeOf($dm)
 [Rot]::EnumDisplaySettings($null, -1, [ref]$dm) | Out-Null
-$want = if ($mode -eq 'portrait') { 1 } else { 0 }   # 0 = 가로, 1 = 세로(90도)
-if ($dm.dmDisplayOrientation -eq $want) { "이미 $mode"; exit 0 }
-# 가로 ↔ 세로가 바뀌면 너비·높이도 맞바꿔요
+$want = 0                       # 0 = landscape
+if ($mode -eq 'portrait') { $want = 1 }   # 1 = portrait (90 deg)
+if ($dm.dmDisplayOrientation -eq $want) { "already $mode"; exit 0 }
+# swap width/height when switching between landscape and portrait
 if (($dm.dmDisplayOrientation % 2) -ne ($want % 2)) { $t = $dm.dmPelsWidth; $dm.dmPelsWidth = $dm.dmPelsHeight; $dm.dmPelsHeight = $t }
 $dm.dmDisplayOrientation = $want
 $dm.dmFields = 0x00000080 -bor 0x00080000 -bor 0x00100000   # DM_DISPLAYORIENTATION | DM_PELSWIDTH | DM_PELSHEIGHT
 $r = [Rot]::ChangeDisplaySettings([ref]$dm, 0)
-if ($r -eq 0) { "ok $mode $($dm.dmPelsWidth)x$($dm.dmPelsHeight)" } else { "실패 $r"; exit 1 }
+if ($r -eq 0) { "ok $mode $($dm.dmPelsWidth)x$($dm.dmPelsHeight)" } else { "failed $r"; exit 1 }

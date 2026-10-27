@@ -498,6 +498,7 @@ app.on('second-instance', (_e, argv) => { if (argv.includes('--demo')) app.quit(
 
 app.whenReady().then(() => {
   if (!gotLock) return;
+  if (require('./src/demo').recoverIfNeeded(config)) log('[demo] 지난 시연 설정을 원래대로 되돌렸어요');
   if (process.platform === 'darwin' && app.dock) app.dock.hide(); // 맥 Dock에 아이콘 안 띄우기
   createPet('schedule', 1);
   createPet('chat', 0);

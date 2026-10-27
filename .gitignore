@@ -16,3 +16,4 @@ assets/characters/
 # 가이드 PDF·캡처 (캐릭터 그림이 들어 있어요)
 docs/img/
 docs/*.pdf
+demo-restore.json

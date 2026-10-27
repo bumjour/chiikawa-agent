@@ -41,14 +41,22 @@ while ($true) {
 `;
 
 function startInput() {
-  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', '-'], { stdio: ['pipe', 'pipe', 'inherit'] });
-  ps.stdin.write(PS_HOST.replace(/\n/g, '\r\n') + '\r\n');
+  // 스크립트는 파일로 실행하고, 표준 입력은 명령 전달에만 써요 (-Command - 로 넘기면 명령과 섞여 멈춰요)
+  const hostFile = path.join(app.getPath('temp'), 'chiikawa-demo-input.ps1');
+  fs.writeFileSync(hostFile, PS_HOST.replace(/\n/g, '\r\n'), 'ascii');
+  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', hostFile], { stdio: ['pipe', 'pipe', 'inherit'] });
   let pending = [];
   ps.stdout.on('data', (d) => {
     const n = (d.toString().match(/ok/g) || []).length;
     for (let i = 0; i < n; i++) (pending.shift() || (() => {}))();
   });
-  const send = (cmd) => new Promise((r) => { pending.push(r); ps.stdin.write(cmd + '\r\n'); });
+  // 5초 안에 답이 없으면 기다리지 않고 넘어가요 (시연이 통째로 멈추지 않게)
+  const send = (cmd) => new Promise((resolve) => {
+    const done = () => { clearTimeout(timer); resolve(); };
+    const timer = setTimeout(() => { pending = pending.filter((f) => f !== done); resolve(); }, 5000);
+    pending.push(done);
+    ps.stdin.write(cmd + '\r\n');
+  });
   let cur = screen.getCursorScreenPoint();
   const toPx = (p) => (process.platform === 'win32' ? screen.dipToScreenPoint(p) : p);
   return {
@@ -119,7 +127,7 @@ function rotate(mode) {
   try {
     const out = require('child_process').execFileSync('powershell.exe',
       ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ROTATE_PS, mode], { encoding: 'utf8', timeout: 20000 });
-    return /ok|이미/.test(out);
+    return /^(ok|already)/m.test(out);
   } catch { return false; }
 }
 // 화면 크기 바뀐 게 반영될 때까지 기다리기
@@ -188,6 +196,8 @@ async function run(ctx) {
   const origChars = { ...config.load().characters };
   const origProfile = { ...config.load().profile };
   const origPos = { schedule: pets.schedule.getBounds(), chat: pets.chat.getBounds() };
+  // 시연 도중 멈춰도 다음 실행 때 원래대로 되돌릴 수 있게 복구 파일 남기기
+  fs.writeFileSync(restoreFile(config), JSON.stringify({ characters: origChars, profile: origProfile }, null, 2));
   config.update({ profile: { name: N, nameJa: NJ, nameJaFor: N } });
   await setChar('schedule', 'hachiware');
   await setChar('chat', 'usagi');
@@ -205,10 +215,13 @@ async function run(ctx) {
   const cast = [];
   for (const id of LINEUP) {
     const line = HOOK[id] || FALLBACK[id];
-    cast.push({ id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: line.ko, ja: line.ja });
+    cast.push({ id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: line.ko, ja: line.ja, prop: id === 'kurimanju' ? 'beer' : null });
     say(`${CHARACTERS[id].nameKo}: ${line.ko}`);
   }
   for (const c of cast) c.image = imageFor(c.id, 'idle');
+  // 쿠리만쥬는 손 든 자세(맥주잔을 들 수 있는 그림)로
+  const kuri = cast.find((c) => c.id === 'kurimanju');
+  if (kuri) kuri.image = require('url').pathToFileURL(path.join(__dirname, '..', 'assets', 'characters', 'kurimanju', 'kurimanju1.png')).href;
   const chatterLine = await makeChatter('usagi').catch(() => FALLBACK.usagi);
   await talkSchedule('hachiware', 'all').catch(() => {});
   await talkSchedule('hachiware', 'remaining').catch(() => {});
@@ -329,7 +342,24 @@ async function run(ctx) {
   pets.chat.setBounds(origPos.chat);
   pets.schedule.showInactive();
   pets.chat.showInactive();
+  try { fs.unlinkSync(restoreFile(config)); } catch { /* 없음 */ }
   if (file) { say('녹화 저장: ' + file); require('electron').shell.showItemInFolder(file); }
+}
+
+function restoreFile(config) {
+  return path.join(path.dirname(config.configPath()), 'demo-restore.json');
+}
+
+// 앱 시작 때 호출: 지난 시연이 중간에 멈췄으면 캐릭터·이름을 원래대로
+function recoverIfNeeded(config) {
+  const f = restoreFile(config);
+  if (!fs.existsSync(f)) return false;
+  try {
+    const saved = JSON.parse(fs.readFileSync(f, 'utf8'));
+    config.update({ characters: saved.characters, profile: saved.profile });
+  } catch { /* 무시 */ }
+  fs.unlinkSync(f);
+  return true;
 }
 
 // 시연 도중 앱이 꺼져도 화면은 가로로 되돌려 두기
@@ -338,4 +368,4 @@ app.on('will-quit', () => {
   if (height > width) rotate('landscape');
 });
 
-module.exports = { run };
+module.exports = { run, recoverIfNeeded, startInput };
