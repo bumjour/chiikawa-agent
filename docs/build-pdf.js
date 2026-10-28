@@ -30,11 +30,12 @@ async function imageFile(charId, kind) {
 }
 const fileUrl = (f) => (f ? pathToFileURL(f).href : null);
 const HACHI = { role: 'schedule', roleLabel: '일정 비서', id: 'hachiware', nameKo: '하치와레', nameJa: 'ハチワレ', color: '#fff', images: {} };
+const KURI = { role: 'chat', roleLabel: 'AI 대화', id: 'kurimanju', nameKo: '쿠리만쥬', color: '#fbe6bd', images: {} };
 const USAGI = { role: 'chat', roleLabel: 'AI 대화', id: 'usagi', nameKo: '우사기', nameJa: 'うさぎ', color: '#fff3c4', images: {} };
 
 // 표지 7종 그림 → img/cast-*.png (GIF는 첫 장면을 PNG로)
 async function prepareImages() {
-  for (const info of [HACHI, USAGI]) {
+  for (const info of [HACHI, USAGI, KURI]) {
     info.images = { idle: fileUrl(await imageFile(info.id, 'idle')), talk: fileUrl(await imageFile(info.id, 'talk')) };
   }
   PICKER.items = looks.GALLERY.kurimanju.map((value) => ({ value, thumb: fileUrl(looks.localFile(CACHE, 'kurimanju', value)) }));
@@ -89,6 +90,8 @@ async function shot(name, page, { stub = {}, width, height, query, script, wait 
 const pet = (info, script) => ({ stub: { info }, width: 340, height: 560, bg: BG, query: { role: info.role }, script, wait: 9000 }); // 한 글자씩 다 나올 때까지
 
 async function captureAll() {
+  // 크기·투명도 조절 화면 (쿠리만쥬, 120% · 투명도 60%)
+  await shot('adjust', 'index.html', { ...pet(KURI, 'openAdjust(); applyAppearance({ scale: 1.2, opacity: 0.6 }); opacityInput.value = 60;'), wait: 1500 });
   await shot('settings-profile', 'settings.html', { stub: { settings: SETTINGS }, width: 444, height: 581,
     script: `document.getElementById('name').value='서연'` });
   await shot('settings-ai', 'settings.html', { stub: { settings: { ...SETTINGS, tab: 'ai', profile: { ...SETTINGS.profile, setupDone: true } } }, width: 444, height: 581,
@@ -107,9 +110,9 @@ async function captureAll() {
     openEditor([{ time: '10:00', text: '팀 회의' }, { time: '14:00', text: '기획 리뷰' }, { time: '19:30', text: '운동' }]);`));
   await shot('bubble-chat', 'index.html', pet(USAGI, `
     chatForm.classList.remove('hidden');
-    say(${line('야하! 서연, 저녁은 야키소바다!! 우라!', 'ヤハ！ソヨン、晩ごはんは焼きそばだッ！！ウラ！')});`));
+    say(${line('야하! 저녁은 야키소바다!! 우라!')});`));
   await shot('bubble-chatter', 'index.html', pet(USAGI, `
-    say(${line('우라! 서연, 점심 뭐야!', 'ウラ！ソヨン、昼メシ何！')});`));
+    say(${line('우라! 점심 뭐야!')});`));
 }
 
 async function printGuide() {
