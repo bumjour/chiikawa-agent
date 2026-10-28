@@ -65,4 +65,7 @@ const GALLERY = {
 
 for (const id of Object.keys(GALLERY)) GALLERY[id] = GALLERY[id].map((f) => (f.startsWith('bundled:') ? f : R2 + f));
 
-module.exports = { GALLERY };
+// 말할 때도 평소 모습 그대로 두는 캐릭터 (쿠리만쥬: "키야!!" 표정 유지)
+const SAME_WHEN_TALKING = ['kurimanju'];
+
+module.exports = { GALLERY, SAME_WHEN_TALKING };

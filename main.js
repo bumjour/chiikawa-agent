@@ -132,14 +132,15 @@ const histories = {}; // role -> 최근 대화 [{ role, text }]
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const USER_TYPES = { worker: '직장인', student: '학생' };
 
-function systemPrompt(charId, task) {
+// chat=true(대화)면 이름은 물어볼 때만, 혼잣말·일정 브리핑은 가끔만
+function systemPrompt(charId, task, { chat = false } = {}) {
   const ch = CHARACTERS[charId];
   const { profile } = config.load();
   return [
     `너는 만화 '치이카와'의 캐릭터 ${ch.nameKo}야.`,
     `성격과 말투: ${ch.persona}`,
     `사용자: ${USER_TYPES[profile.type] || '직장인'}.`
-      + (profile.name ? ` 사용자 이름은 "${profile.name}". 이 이름으로 불러.` : ''),
+      + (profile.name ? ` 사용자 이름은 "${profile.name}". ${chat ? '대답에 이름을 넣지 마. 사용자가 자기 이름을 물어볼 때만 써.' : '이름은 여러 번 중 한 번 정도만 자연스럽게 부르고, 억지로 넣지 마.'}` : ''),
     task,
     '규칙:',
     '- 처음부터 끝까지 캐릭터 말투를 유지해.',
@@ -223,7 +224,7 @@ async function talkChat(role, charId, text) {
   history.push({ role: 'user', text });
   try {
     const reply = await askChar(cfg, {
-      system: systemPrompt(charId, '사용자와 자유롭게 대화하는 친구야. 질문에는 캐릭터 말투로 실제 도움이 되게 답해. 한국어 기준 1~4문장으로 짧게.'),
+      system: systemPrompt(charId, '사용자와 자유롭게 대화하는 친구야. 질문에는 캐릭터 말투로 실제 도움이 되게 답해. 한국어 기준 1~4문장으로 짧게.', { chat: true }),
       messages: history.slice(-12),
     });
     history.push({ role: 'assistant', text: JSON.stringify({ ko: reply.ko }) });

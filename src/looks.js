@@ -4,10 +4,11 @@
 const fs = require('fs');
 const path = require('path');
 const IMAGE_EXT = ['png', 'gif', 'webp'];
+const { GALLERY: GALLERY_ALL, SAME_WHEN_TALKING } = require('./gallery');
 const BUNDLED_DIR = path.join(__dirname, '..', 'assets', 'characters');
 
 // 공개 배포판에는 assets/characters 이미지를 넣지 않아요(저작권). 실제로 있는 것만 예시로 보여 줘요.
-const GALLERY = Object.fromEntries(Object.entries(require('./gallery').GALLERY).map(([id, list]) => [
+const GALLERY = Object.fromEntries(Object.entries(GALLERY_ALL).map(([id, list]) => [
   id,
   list.filter((v) => !v.startsWith('bundled:') || fs.existsSync(path.join(BUNDLED_DIR, v.slice('bundled:'.length)))),
 ]));
@@ -28,6 +29,7 @@ function cacheFile(dir, charId, url) {
 function chosen(cfg, charId, kind) {
   const picked = cfg.looks?.[charId]?.[kind];
   if (picked) return picked;
+  if (kind === 'talk' && SAME_WHEN_TALKING.includes(charId)) return 'none'; // 말할 때도 평소 모습
   const list = GALLERY[charId] || [];
   return (kind === 'idle' ? list[0] : list[1]) || null;
 }
