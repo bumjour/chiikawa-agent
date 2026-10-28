@@ -243,7 +243,7 @@ async function run(ctx) {
   await talkSchedule('hachiware', 'all').catch(() => {});
   await talkSchedule('hachiware', 'remaining').catch(() => {});
   // 대화 장면 대답도 미리 받아 두기 (AI가 느려도 영상에서 바로 나오게)
-  for (const [id, q] of [['kurimanju', '퇴근하고 시원한 맥주 한 잔 어때?'], ['usagi', '저녁 메뉴 추천 좀 해줘']]) {
+  for (const [id, q] of [['kurimanju', '시원한 맥주 한 잔 어때?'], ['usagi', '저녁 메뉴 추천 좀 해줘']]) {
     const r = await prepareAnswer(id, q).catch((e) => ({ ko: '(실패) ' + e.message }));
     say(`미리 받은 대답 ${id}: ${r.ko.replace(/\s+/g, ' ')}`);
   }
@@ -345,7 +345,7 @@ async function run(ctx) {
       await waitFor('chat', "!chatInput.disabled && !petEl.classList.contains('talking') && koEl.textContent.length > 0", 20000);
       await step(2500);
     };
-    await askChat('퇴근하고 시원한 맥주 한 잔 어때?');
+    await askChat('시원한 맥주 한 잔 어때?');
     await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     await step(600);
     await pickCharacter('chat', 'usagi');
