@@ -182,3 +182,17 @@ html, body {
   color: #7d9cc4;
   cursor: pointer;
 }
+
+#updateBar { margin-top: 10px; text-align: center; }
+.primaryBtn {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #7d9cc4;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primaryBtn:hover { background: #5b7ba6; }

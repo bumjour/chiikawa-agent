@@ -1,7 +1,7 @@
 'use strict';
 // 가이드 PDF 만들기: ① 앱 화면을 가짜 데이터로 띄워 캡처 → ② guide.html을 A4 PDF로 인쇄
 // 실행: npm run guide   (결과: docs/치이카와 에이전트 설치 방법.pdf)
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeImage } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
@@ -18,14 +18,46 @@ app.setPath('userData', path.join(require('os').tmpdir(), 'chiikawa-guide-build'
 // 2분 넘게 걸리면 멈춘 것으로 보고 종료 (창이 남아 있지 않게)
 setTimeout(() => { console.log('시간 초과로 종료'); app.exit(1); }, 120000).unref();
 
-// 가이드에는 공식 캐릭터 그림을 넣지 않아요(저작권). 캐릭터는 모두 앱의 임시 그림(placeholder.js)으로 나와요.
-const HACHI = { role: 'schedule', roleLabel: '일정 비서', id: 'hachiware', nameKo: '하치와레', nameJa: 'ハチワレ', color: '#fff',
-  images: { idle: null, talk: null } }; // 공식 그림 대신 임시 그림
-const USAGI = { role: 'chat', roleLabel: 'AI 대화', id: 'usagi', nameKo: '우사기', nameJa: 'うさぎ', color: '#fff3c4',
-  images: { idle: null, talk: null } };
-const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.0', chatter: 'sometimes',
+// 캐릭터 그림: 앱을 처음 받았을 때 나오는 기본 모습 그대로 (예시 GIF는 개발용 캐시 폴더에 받아 둬요)
+const looks = require('../src/looks');
+const { CHARACTERS } = require('../src/characters');
+const CACHE = path.join(ROOT, 'characters');
+async function imageFile(charId, kind) {
+  const r = looks.resolve({}, CACHE, charId, kind);
+  if (!r.file) return null;
+  if (!r.exists) await looks.download(CACHE, charId, r.value);
+  return r.file;
+}
+const fileUrl = (f) => (f ? pathToFileURL(f).href : null);
+const HACHI = { role: 'schedule', roleLabel: '일정 비서', id: 'hachiware', nameKo: '하치와레', nameJa: 'ハチワレ', color: '#fff', images: {} };
+const USAGI = { role: 'chat', roleLabel: 'AI 대화', id: 'usagi', nameKo: '우사기', nameJa: 'うさぎ', color: '#fff3c4', images: {} };
+
+// 표지 7종 그림 → img/cast-*.png (GIF는 첫 장면을 PNG로)
+async function prepareImages() {
+  for (const info of [HACHI, USAGI]) {
+    info.images = { idle: fileUrl(await imageFile(info.id, 'idle')), talk: fileUrl(await imageFile(info.id, 'talk')) };
+  }
+  PICKER.items = looks.GALLERY.kurimanju.map((value) => ({ value, thumb: fileUrl(looks.localFile(CACHE, 'kurimanju', value)) }));
+  PICKER.selected.idle = PICKER.items[0].value;
+  for (const id of Object.keys(CHARACTERS)) {
+    const file = await imageFile(id, 'idle');
+    const img = nativeImage.createFromPath(file);
+    if (img.isEmpty()) { // GIF 등은 창에 띄워 첫 장면을 찍어요
+      const win = new BrowserWindow({ show: false, width: 400, height: 400, transparent: true, frame: false, webPreferences: { backgroundThrottling: false } });
+      const page = path.join(IMG, '_frame.html'); // data: 주소에서는 로컬 파일을 못 불러와서 파일로 띄워요
+      fs.writeFileSync(page, `<body style="margin:0;background:transparent"><img src="${fileUrl(file)}" style="width:400px;height:400px;object-fit:contain;object-position:bottom"></body>`);
+      await win.loadFile(page);
+      fs.unlinkSync(page);
+      await new Promise((r) => setTimeout(r, 600));
+      fs.writeFileSync(path.join(IMG, `cast-${id}.png`), (await win.webContents.capturePage()).toPNG());
+      win.destroy();
+    } else fs.writeFileSync(path.join(IMG, `cast-${id}.png`), img.toPNG());
+    console.log('그림:', id);
+  }
+}
+const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.4', chatter: '10m', tab: 'profile',
   profile: { name: '서연', type: 'worker', setupDone: false } };
-// 모습 고르기: 이미지를 아직 안 넣은 상태(임시 그림 + "내 이미지 추가" 안내)로 캡처
+// 모습 고르기: 쿠리만쥬 예시 그림들 중 첫 번째를 고른 상태로 캡처 (items는 prepareImages에서 채워요)
 const PICKER = { charId: 'kurimanju', nameKo: '쿠리만쥬', color: '#fbe6bd', items: [], selected: { idle: null, talk: 'none' } };
 
 const BG = '#dfe8f2'; // 바탕화면 느낌 배경
@@ -101,7 +133,7 @@ async function printGuide() {
 app.on('window-all-closed', () => {});
 app.whenReady().then(async () => {
   try {
-    if (!process.argv.includes('--pdf-only')) await captureAll();
+    if (!process.argv.includes('--pdf-only')) { await prepareImages(); await captureAll(); }
     await printGuide();
   } catch (err) {
     console.log('실패:', err.message);

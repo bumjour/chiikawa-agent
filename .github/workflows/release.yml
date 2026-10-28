@@ -45,6 +45,8 @@ jobs:
           name: installer-${{ runner.os }}
           path: |
             dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
             dist/*.dmg
           if-no-files-found: error
 

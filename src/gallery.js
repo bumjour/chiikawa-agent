@@ -43,6 +43,7 @@ const GALLERY = {
     'd401a67b428b444ca12b03d95c2de4f9.gif',
   ],
   kurimanju: [
+    'bundled:kurimanju/kurimanju5.png', // 맥주 한 잔 (기본 모습)
     'bundled:kurimanju/kurimanju1.png',
     'bundled:kurimanju/kurimanju2.png',
     'bundled:kurimanju/kurimanju3.png',

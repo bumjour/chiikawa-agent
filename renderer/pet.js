@@ -13,6 +13,8 @@ const rowsEl = $('rows');
 const schedBar = $('schedBar');
 const modeBtn = $('modeBtn');
 const editBtn = $('editBtn');
+const updateBar = $('updateBar');
+const updateBtn = $('updateBtn');
 
 let info = null;
 let hideTimer = null;
@@ -38,6 +40,7 @@ function closeBubble() {
   bubbleEl.classList.add('hidden');
   scheduleForm.classList.add('hidden');
   schedBar.classList.add('hidden');
+  updateBar.classList.add('hidden');
   setPetImage('idle');
   petApi.setIgnore(true);
 }
@@ -177,6 +180,21 @@ petApi.onChatter((line) => {
   if (!bubbleEl.classList.contains('hidden')) return;
   chatForm.classList.add('hidden');
   say(line, { autoHide: 12000 });
+});
+
+// 새 버전 알림: 버튼이 있는 말풍선 (저절로 닫히지 않아요)
+let updateKind = null;
+petApi.onUpdate((msg) => {
+  chatForm.classList.add('hidden');
+  scheduleForm.classList.add('hidden');
+  schedBar.classList.add('hidden');
+  updateBar.classList.toggle('hidden', !msg.button);
+  if (msg.button) { updateKind = msg.button.kind; updateBtn.textContent = msg.button.label; }
+  say(msg, msg.button ? {} : { autoHide: 8000 });
+});
+updateBtn.addEventListener('click', () => {
+  if (updateKind === 'install') say({ ko: '업데이트하고 금방 다시 올게!', ja: 'アップデートしてすぐ戻ってくるね！' });
+  petApi.doUpdate(updateKind);
 });
 
 petApi.onEditSchedule(async () => {

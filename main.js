@@ -317,6 +317,25 @@ function greetOnStart() {
   }, 2500);
 }
 
+// ---- 새 버전 알림: 대화 캐릭터(없으면 일정 캐릭터)가 말풍선으로 ----
+const updater = require('./src/updater');
+const UPDATE_BUTTON = { install: '⬆️ 지금 업데이트', open: '⬇️ 새 버전 받으러 가기' };
+function notifyUpdate(kind, version) {
+  const role = pets.chat && !pets.chat.isDestroyed() ? 'chat' : 'schedule';
+  const win = pets[role];
+  if (!win || win.isDestroyed()) return;
+  const ch = CHARACTERS[currentChar(role)];
+  let msg;
+  if (kind === 'latest') msg = { ko: `이미 최신 버전이야! (v${version})`, ja: `もう最新バージョンだよ！（v${version}）` };
+  else if (kind === 'error') msg = { ko: '업데이트 확인이 안 돼… 인터넷 연결을 확인해 줘!', ja: 'アップデートを確認できない…ネット接続を確認してね！' };
+  else {
+    const v = String(version).replace(/^v/, '');
+    msg = { ko: `${ch.updateLine.ko} (v${v})`, ja: ch.updateLine.ja, button: { kind, label: UPDATE_BUTTON[kind] } };
+  }
+  win.webContents.send('pet:update', msg);
+}
+ipcMain.on('pet:do-update', (_e, kind) => updater.act(kind));
+
 async function runChatter() {
   const win = pets.chat;
   try {
@@ -516,6 +535,7 @@ ipcMain.on('pet:context-menu', (event) => {
         { label: '다시 시작', click: () => { app.relaunch(); app.exit(0); } },
       ],
     },
+    { label: '업데이트 확인', click: () => updater.check(true) },
     { label: '정보', click: () => openSettings('about') },
     { type: 'separator' },
     { label: '종료', click: () => app.quit() },
@@ -563,6 +583,7 @@ function startNormally() {
   if (cfg.profile.name && cfg.profile.nameJaFor !== cfg.profile.name) updateNameJa();
   greetOnStart();     // 켜자마자 대표 대사 한마디
   scheduleChatter();  // 그다음부터는 설정한 간격마다
+  updater.start({ notify: notifyUpdate, log }); // 10초 뒤 + 6시간마다 새 버전 확인
 }
 
 app.on('window-all-closed', () => app.quit());
