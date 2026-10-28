@@ -1,4 +1,4 @@
-# 맥에서 실제로 켜지는지 확인 (수동 실행): Releases의 최신 dmg를 받아 설치 → 실행 → 오류 기록 출력
+# 맥에서 실제로 켜지는지 확인 (수동 실행): 소스로 맥 앱을 만들어 → 실행 → 오류 기록 출력
 name: mac-test
 
 on:
@@ -6,40 +6,29 @@ on:
 
 jobs:
   run:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: macos-latest   # M칩
-            dmg: ChiikawaAgent-Mac-AppleSilicon.dmg
-          - os: macos-13       # 인텔
-            dmg: ChiikawaAgent-Mac-Intel.dmg
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest # M칩
     steps:
-      - name: 최신 dmg 받아서 설치
-        run: |
-          curl -sSL -o app.dmg "https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg"
-          hdiutil attach app.dmg -nobrowse -mountpoint /Volumes/ca
-          cp -R "/Volumes/ca/치이카와 에이전트.app" /Applications/
-          hdiutil detach /Volumes/ca
-      - name: 서명 확인
-        run: |
-          APP="/Applications/치이카와 에이전트.app"
-          codesign -dvv "$APP" 2>&1 || true
-          codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 || true
-          spctl -a -vv "$APP" 2>&1 || true
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 맥 앱 만들기 (설치 파일 없이 앱만)
+        run: npx electron-builder --mac --arm64 --dir --publish never -c.productName="Chiikawa Agent"
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
       - name: 실행해 보기 (20초)
         shell: bash {0}
-        env:
-          ELECTRON_ENABLE_LOGGING: 1
-          ELECTRON_ENABLE_STACK_DUMPING: 1
         run: |
-          APP="/Applications/치이카와 에이전트.app"
-          "$APP/Contents/MacOS/치이카와 에이전트" --enable-logging > run.log 2>&1 &
+          APP="$(ls -d dist/mac-arm64/*.app | head -1)"
+          echo "앱: $APP"; ls "$APP/Contents/MacOS"
+          "$APP/Contents/MacOS/$(ls "$APP/Contents/MacOS" | head -1)" > run.log 2>&1 &
           PID=$!
           sleep 20
           if kill -0 $PID 2>/dev/null; then echo "RESULT: 20초 뒤에도 실행 중 (정상)"; kill $PID; else wait $PID; echo "RESULT: 꺼짐 (exit $?)"; fi
-          echo "----- 실행 출력 -----"; tail -n 80 run.log || true
-          echo "----- agent.log -----"; cat ~/Library/Application\ Support/*/agent.log 2>/dev/null | tail -n 40 || true
+          echo "----- 실행 출력 -----"; tail -n 60 run.log
+          echo "----- agent.log -----"; tail -n 30 ~/Library/Application\ Support/*/agent.log 2>/dev/null
           echo "----- 충돌 기록 -----"
-          for f in ~/Library/Logs/DiagnosticReports/*.ips /Library/Logs/DiagnosticReports/*.ips; do [ -f "$f" ] && { echo "== $f"; head -c 6000 "$f"; echo; }; done || true
+          for f in ~/Library/Logs/DiagnosticReports/*.ips; do [ -f "$f" ] && { echo "== $f"; head -c 3000 "$f"; echo; }; done
+          true
