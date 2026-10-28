@@ -182,6 +182,7 @@ async function run(ctx) {
   async function clickOn(role, selector, ms) {
     const p = await center(role, selector);
     if (!p) { say(`못 찾음: ${role} ${selector}`); return false; }
+    pets[role].setIgnoreMouseEvents(false); // 말풍선을 닫은 직후엔 클릭이 뒤로 통과해서
     await input.moveTo(p.x, p.y, ms); await wait(150); await input.click();
     return true;
   }
@@ -189,6 +190,7 @@ async function run(ctx) {
   const ORDER = ['chiikawa', 'hachiware', 'usagi', 'momonga', 'kurimanju', 'shisa', 'rakko'];
   async function pickCharacter(role, id) {
     const p = await center(role, '#pet');
+    pets[role].setIgnoreMouseEvents(false); // 말풍선을 닫은 직후엔 우클릭이 뒤로 통과해서
     await input.moveTo(p.x, p.y, 500); await wait(250); await input.rightClick();
     await step(900);
     await input.keys('{DOWN}'); await step(400);          // 캐릭터 바꾸기
@@ -352,6 +354,7 @@ async function run(ctx) {
     await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     await step(600);
     const p = await center('chat', '#pet');
+    pets.chat.setIgnoreMouseEvents(false);
     await input.moveTo(p.x, p.y, 500); await wait(250); await input.rightClick();
     await step(900);
     for (let i = 0; i < 3; i++) { await input.keys('{DOWN}'); await step(300); } // 캐릭터 바꾸기 → 모습 고르기 → 크기·투명도 조절
