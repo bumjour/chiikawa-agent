@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: 최신 dmg 받아서 설치
         run: |
-          curl -sSL -o app.dmg "https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/${{ matrix.dmg }}"
+          curl -sSL -o app.dmg "https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg"
           hdiutil attach app.dmg -nobrowse -mountpoint /Volumes/ca
           cp -R "/Volumes/ca/치이카와 에이전트.app" /Applications/
           hdiutil detach /Volumes/ca
@@ -29,6 +29,10 @@ jobs:
           codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 || true
           spctl -a -vv "$APP" 2>&1 || true
       - name: 실행해 보기 (20초)
+        shell: bash {0}
+        env:
+          ELECTRON_ENABLE_LOGGING: 1
+          ELECTRON_ENABLE_STACK_DUMPING: 1
         run: |
           APP="/Applications/치이카와 에이전트.app"
           "$APP/Contents/MacOS/치이카와 에이전트" --enable-logging > run.log 2>&1 &
