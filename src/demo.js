@@ -44,7 +44,7 @@ function startInput() {
   // 스크립트는 파일로 실행하고, 표준 입력은 명령 전달에만 써요 (-Command - 로 넘기면 명령과 섞여 멈춰요)
   const hostFile = path.join(app.getPath('temp'), 'chiikawa-demo-input.ps1');
   fs.writeFileSync(hostFile, PS_HOST.replace(/\n/g, '\r\n'), 'ascii');
-  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', hostFile], { stdio: ['pipe', 'pipe', 'inherit'] });
+  const ps = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', hostFile], { stdio: ['pipe', 'pipe', 'inherit'], windowsHide: true }); // 빈 파워셸 창이 뜨지 않게
   let pending = [];
   ps.stdout.on('data', (d) => {
     const n = (d.toString().match(/ok/g) || []).length;
@@ -195,7 +195,22 @@ async function run(ctx) {
     await wait(1000);
     pets[role].webContents.setZoomFactor(zoom);
     await step(600);
+    // 메뉴 고르기가 빗나갔으면(포커스 문제 등) 직접 바꿔서 시연을 이어 가요
+    if (config.load().characters[role] !== id) {
+      say(`메뉴로 못 바꿈(${role}: ${config.load().characters[role]}) → 직접 ${id}`);
+      await setChar(role, id);
+    }
   }
+  // 조건이 맞을 때까지 기다리기 (최대 ms)
+  async function waitFor(role, expr, ms) {
+    for (let t = 0; t < ms; t += 250) {
+      if (await pets[role].webContents.executeJavaScript(expr).catch(() => false)) return true;
+      await step(250);
+    }
+    return false;
+  }
+  const STATE = "JSON.stringify({ bubble: !bubbleEl.classList.contains('hidden'), bar: !schedBar.classList.contains('hidden'), editor: !scheduleForm.classList.contains('hidden'), ko: koEl.textContent.slice(0, 40) })";
+  const BAR_SHOWN = "!schedBar.classList.contains('hidden')";
 
   const { CHARACTERS } = require('./characters');
   const LINEUP = ORDER;
@@ -294,10 +309,16 @@ async function run(ctx) {
     // ② 일정 캐릭터를 하치와레로 지정 → 오늘 일정
     await pickCharacter('schedule', 'hachiware');
     await clickOn('schedule', '#pet');
-    await step(8500);
+    if (!(await waitFor('schedule', BAR_SHOWN, 15000))) {
+      say('일정 말풍선이 안 떠서 직접 띄움: ' + await pets.schedule.webContents.executeJavaScript(STATE));
+      await pets.schedule.webContents.executeJavaScript('briefSchedule(), true');
+      await waitFor('schedule', BAR_SHOWN, 15000);
+    }
+    await step(7000); // 한 글자씩 다 나올 때까지
     // ③ 남은 일정
-    await clickOn('schedule', '#modeBtn', 550);
-    await step(8000);
+    if (!(await clickOn('schedule', '#modeBtn', 550))) await pets.schedule.webContents.executeJavaScript("briefSchedule('remaining'), true");
+    await waitFor('schedule', BAR_SHOWN, 15000);
+    await step(7000);
     await clickOn('schedule', '#pet', 500); // 닫기
     await step(800);
     // ④ 대화 캐릭터를 쿠리만쥬로 지정 → 대화
