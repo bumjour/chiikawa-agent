@@ -232,7 +232,12 @@ async function talkSchedule(charId, mode = 'all') {
   }
 }
 
+// 시연 영상용: 미리 받아 둔 대답 (캐릭터|질문 → 대답). 평소엔 비어 있어요
+const demoAnswers = new Map();
+
 async function talkChat(role, charId, text) {
+  const prepared = demoAnswers.get(`${charId}|${text}`);
+  if (prepared) return prepared;
   const cfg = config.load();
   if (!ai.hasKey(cfg)) {
     openSettings('ai');
@@ -549,6 +554,15 @@ app.whenReady().then(() => {
     clearTimeout(chatterTimer); // 시연 중에 혼잣말이 끼어들지 않게
     setTimeout(() => require('./src/demo').run({
       pets, config, schedule, talkSchedule, makeChatter, imageFor, log,
+      prepareAnswer: async (charId, q) => {
+        // 실패한 대답('앗, 대답을 못 했어…')은 담지 않고 최대 3번까지 다시 받아요
+        for (let i = 0; i < 3; i++) {
+          const r = await talkChat('demo-prep', charId, q);
+          if (!r.ko.startsWith('앗,')) { demoAnswers.set(`${charId}|${q}`, r); return r; }
+        }
+        return { ko: '(실패) 영상에서 실시간으로 다시 물어봐요' };
+      },
+      clearAnswers: () => demoAnswers.clear(),
       setClock: (d) => { clockOverride = d; briefCache.clear(); },
     }).catch((err) => log(`[demo] 실패: ${err.message}`)), 3000);
   }

@@ -154,7 +154,7 @@ function recoverIfNeeded(config, schedule) {
 }
 
 async function run(ctx) {
-  const { pets, config, schedule, talkSchedule, makeChatter, imageFor, setClock, log } = ctx;
+  const { pets, config, schedule, talkSchedule, makeChatter, imageFor, setClock, log, prepareAnswer, clearAnswers } = ctx;
   const say = (m) => { console.log('[demo] ' + m); log(`[demo] ${m}`); };
   let aborted = false;
   globalShortcut.register('CommandOrControl+Alt+Q', () => { aborted = true; say('중단 요청'); });
@@ -240,6 +240,11 @@ async function run(ctx) {
   const chatterLine = await makeChatter('kurimanju').catch(() => ({ ko: '하아—! 오늘도 한 잔… 키야~' }));
   await talkSchedule('hachiware', 'all').catch(() => {});
   await talkSchedule('hachiware', 'remaining').catch(() => {});
+  // 대화 장면 대답도 미리 받아 두기 (AI가 느려도 영상에서 바로 나오게)
+  for (const [id, q] of [['kurimanju', '퇴근하고 시원한 맥주 한 잔 어때?'], ['usagi', '저녁 메뉴 추천 좀 해줘']]) {
+    const r = await prepareAnswer(id, q).catch((e) => ({ ko: '(실패) ' + e.message }));
+    say(`미리 받은 대답 ${id}: ${r.ko.replace(/\s+/g, ' ')}`);
+  }
   const cast = LINEUP.map((id) => ({
     id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: HOOK[id].ko, ja: HOOK[id].ja,
     image: imageFor(id, 'idle'), // 쿠리만쥬는 기본 모습이 '키야!!' + 맥주
@@ -326,14 +331,23 @@ async function run(ctx) {
     await step(7000);
     await clickOn('schedule', '#pet', 500); // 닫기
     await step(800);
-    // ④ 대화 캐릭터를 쿠리만쥬로 지정 → 대화
+    // ④ 대화: 쿠리만쥬에게 한 잔 권하기(키야!) → 대화 캐릭터를 우사기로 지정 → 저녁 메뉴 추천
+    const askChat = async (q) => {
+      await clickOn('chat', '#pet');
+      await step(1200);
+      for (const ch of q) { clipboard.writeText(ch); await input.keys('^v'); await wait(90); }
+      await step(700);
+      await input.keys('{ENTER}');
+      await step(1500);
+      // 대답이 한 글자씩 다 나올 때까지 (최대 20초) + 읽을 시간
+      await waitFor('chat', "!chatInput.disabled && !petEl.classList.contains('talking') && koEl.textContent.length > 0", 20000);
+      await step(2500);
+    };
+    await askChat('퇴근하고 시원한 맥주 한 잔 어때?');
+    await pets.chat.webContents.executeJavaScript('closeBubble(), true');
+    await step(600);
     await pickCharacter('chat', 'usagi');
-    await clickOn('chat', '#pet');
-    await step(1200);
-    for (const ch of '저녁 메뉴 추천 좀 해줘') { clipboard.writeText(ch); await input.keys('^v'); await wait(90); }
-    await step(700);
-    await input.keys('{ENTER}');
-    await step(9500);
+    await askChat('저녁 메뉴 추천 좀 해줘');
     // ⑤ 크기·투명도 조절: 우클릭 → 크기·투명도 조절 → 모서리 점 끌어 키우기 → 막대로 투명하게
     await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     await step(600);
@@ -398,6 +412,7 @@ async function run(ctx) {
   // ── 원래대로: 시각·이름·일정·캐릭터·위치·배율 ──
   zoom = 1;
   setClock(null);
+  clearAnswers();
   schedule.saveToday(orig.schedule);
   config.update({ profile: orig.profile, appearance: orig.appearance });
   await setChar('schedule', orig.characters.schedule);

@@ -77,14 +77,19 @@ async function readJson(res) {
   return data;
 }
 
-// 모델이 코드블록(```json)으로 감싸거나 형식을 어겨도 최대한 ko/ja를 꺼내요.
+// 모델이 코드블록(```json)으로 감싸거나 형식을 어겨도 최대한 ko를 꺼내요.
+// 가끔 줄바꿈을 글자 그대로(\n) 보내는 모델이 있어서 진짜 줄바꿈으로 바꿔요 (말풍선에 'nn'처럼 보이던 문제)
+const tidy = (t) => String(t).replace(/\\r?\\n/g, '\n').replace(/\\t/g, ' ').replace(/\\"/g, '"').trim();
+
 function parseReply(text) {
   const cleaned = text.replace(/```(?:json)?/g, '').trim();
   try {
     const obj = JSON.parse(cleaned.slice(cleaned.indexOf('{'), cleaned.lastIndexOf('}') + 1));
-    if (obj.ko) return { ko: String(obj.ko), ja: String(obj.ja || '') };
+    if (obj.ko) return { ko: tidy(obj.ko) };
   } catch { /* 아래로 */ }
-  return { ko: cleaned, ja: '' };
+  // JSON이 깨졌으면 "ko": "..." 부분만 꺼내기
+  const m = cleaned.match(/"ko"\s*:\s*"([\s\S]*?)"\s*[,}]/);
+  return { ko: tidy(m ? m[1] : cleaned) };
 }
 
 async function ask(cfg, { system, messages }) {
