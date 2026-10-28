@@ -236,8 +236,8 @@ async function run(ctx) {
   schedule.saveToday(DEMO_SCHEDULE);
   for (const id of LINEUP) imageFor(id, 'idle'); // 아직 안 받은 그림이 있으면 받기 시작
   await setChar('schedule', 'chiikawa'); // 시작은 치이카와 → 영상에서 하치와레로 지정
-  await setChar('chat', 'usagi');        // 시작은 우사기 → 영상에서 쿠리만쥬로 지정
-  const chatterLine = await makeChatter('usagi').catch(() => ({ ko: '야하! 서연! 졸려?! 우라!', ja: 'ヤハ！ソヨン！ねむい？！ウラ！' }));
+  await setChar('chat', 'kurimanju');    // 시작은 쿠리만쥬 → 영상에서 우사기로 지정 (AI 대화는 꼭 우사기)
+  const chatterLine = await makeChatter('kurimanju').catch(() => ({ ko: '하아—! 오늘도 한 잔… 키야~' }));
   await talkSchedule('hachiware', 'all').catch(() => {});
   await talkSchedule('hachiware', 'remaining').catch(() => {});
   const cast = LINEUP.map((id) => ({
@@ -307,7 +307,7 @@ async function run(ctx) {
     pets.schedule.showInactive();
     pets.chat.showInactive();
     await step(1000);
-    // ① 우사기 혼잣말
+    // ① 쿠리만쥬 혼잣말
     pets.chat.webContents.send('pet:chatter', chatterLine);
     await step(4500); // 한 글자씩 천천히 나와요
     await pets.chat.webContents.executeJavaScript('closeBubble(), true');
@@ -327,10 +327,10 @@ async function run(ctx) {
     await clickOn('schedule', '#pet', 500); // 닫기
     await step(800);
     // ④ 대화 캐릭터를 쿠리만쥬로 지정 → 대화
-    await pickCharacter('chat', 'kurimanju');
+    await pickCharacter('chat', 'usagi');
     await clickOn('chat', '#pet');
     await step(1200);
-    for (const ch of '오늘 야근인데 저녁 뭐 먹지?') { clipboard.writeText(ch); await input.keys('^v'); await wait(90); }
+    for (const ch of '저녁 메뉴 추천 좀 해줘') { clipboard.writeText(ch); await input.keys('^v'); await wait(90); }
     await step(700);
     await input.keys('{ENTER}');
     await step(9500);
@@ -345,6 +345,9 @@ async function run(ctx) {
     await input.keys('{ENTER}');
     await step(900);
     if (!(await pets.chat.webContents.executeJavaScript("document.body.classList.contains('adjusting')"))) {
+      // 메뉴가 빗나가 다른 창(모습 고르기 등)이 열렸으면 닫기
+      for (const w of BrowserWindow.getAllWindows()) if (/모습 고르기|설정/.test(w.getTitle())) w.close();
+      await input.keys('{ESC}');
       say('메뉴로 조절 화면을 못 엶 → 직접 열기');
       await pets.chat.webContents.executeJavaScript('openAdjust(), true');
       await step(500);
@@ -373,7 +376,7 @@ async function run(ctx) {
     await step(900);
     await clickOn('chat', '#adjustDone', 500);
     await step(400);
-    pets.chat.webContents.send('pet:chatter', { ko: '이 정도면… 일할 때도 안 들키겠군. 키야~' });
+    pets.chat.webContents.send('pet:chatter', { ko: '야하! 이러면 일할 때도 안 들켜! 우라!' });
     await step(4500);
     // ⑥ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
     await input.moveTo(full.x + full.width * 0.9, full.y + full.height * 0.15, 500);
