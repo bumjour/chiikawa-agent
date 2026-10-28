@@ -21,7 +21,7 @@
     padding: 40px max(16px, env(safe-area-inset-left)) 60px max(16px, env(safe-area-inset-right)); }
   main { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
   header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  header img { width: 88px; height: 88px; }
+  header img.hero { width: 150px; height: 150px; object-fit: contain; }
   h1 { margin: 0; font-size: 28px; }
   .lede { margin: 0; color: var(--sub); }
   .downloads { display: flex; flex-direction: column; gap: 12px; }
@@ -48,7 +48,7 @@
 <body>
 <main>
   <header>
-    <img src="icon.png" alt="">
+    <img class="hero" src="chiikawa.gif" alt="치이카와">
     <h1>치이카와 에이전트</h1>
     <p class="lede">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화해요 · 무료</p>
   </header>
