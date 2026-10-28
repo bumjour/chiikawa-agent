@@ -136,46 +136,19 @@ function systemPrompt(charId, task) {
   const ch = CHARACTERS[charId];
   const { profile } = config.load();
   return [
-    `너는 만화 '치이카와'의 캐릭터 ${ch.nameKo}(${ch.nameJa})야.`,
+    `너는 만화 '치이카와'의 캐릭터 ${ch.nameKo}야.`,
     `성격과 말투: ${ch.persona}`,
     `사용자: ${USER_TYPES[profile.type] || '직장인'}.`
-      + (profile.name ? ` 사용자 이름은 "${profile.name}". ko 문장에서는 한글 "${profile.name}" 그대로, `
-        + (profile.nameJa ? `ja 문장에서는 "${profile.nameJa}"(으)로 불러 (한자·한글 금지).`
-          : 'ja 문장에서는 그 이름의 가타카나 발음 표기로만 불러 (한자 금지, 예: 민지 → ミンジ).')
-        + ' ko에 가타카나를 섞지 마.' : ''),
+      + (profile.name ? ` 사용자 이름은 "${profile.name}". 이 이름으로 불러.` : ''),
     task,
     '규칙:',
     '- 처음부터 끝까지 캐릭터 말투를 유지해.',
-    '- 한국어 답과 같은 뜻의 일본어 번역을 함께 줘. 일본어도 캐릭터 말투로.',
-    '- ja 문장에는 한글을 한 글자도 쓰지 마 (모두 일본어로).',
-    '- 출력은 JSON 하나만: {"ko": "한국어", "ja": "日本語"}',
+    '- 한국어로만 답해.',
+    '- 출력은 JSON 하나만: {"ko": "한국어"}',
   ].join('\n');
 }
 
-// 캐릭터 대사 요청 + 일본어 문장에 한글 이름이 남으면 일본어 표기로 바꾸기
-async function askChar(cfg, opts) {
-  const reply = await ai.ask(cfg, opts);
-  const { name, nameJa } = cfg.profile;
-  if (name && nameJa && reply.ja) reply.ja = reply.ja.split(name).join(nameJa);
-  return reply;
-}
-
-// 이름의 일본어(가타카나) 표기를 한 번 정해서 저장 (예: 서연 → ソヨン)
-async function updateNameJa() {
-  const cfg = config.load();
-  const { name } = cfg.profile;
-  if (!name || !ai.hasKey(cfg)) return;
-  try {
-    const r = await ai.ask(cfg, {
-      system: '출력은 JSON 하나만: {"ko": "한국어", "ja": "日本語"}',
-      messages: [{ role: 'user', text: `한국어 이름 "${name}"을 일본어 가타카나 발음 표기로 바꿔 줘. ko에는 원래 이름, ja에는 가타카나만 (설명 금지).` }],
-    });
-    const nameJa = r.ja.replace(/[^゠-ヿー・]/g, '');
-    if (nameJa) config.update({ profile: { nameJa, nameJaFor: name } });
-  } catch (err) {
-    log(`[name] 일본어 이름 만들기 실패: ${err.message}`);
-  }
-}
+const askChar = (cfg, opts) => ai.ask(cfg, opts);
 
 // 홍보 영상 촬영 때만 시각을 고정해요 (밤에 찍어도 낮 일정처럼 보이게). 평소엔 null
 let clockOverride = null;
@@ -213,17 +186,16 @@ async function talkSchedule(charId, mode = 'all') {
       mode,
       empty: true,
       ko: '오늘 일정이 아직 없어! 아래에 적어 줄래?',
-      ja: '今日の予定がまだないよ！下に書いてくれる？',
     };
   }
   const items = mode === 'remaining' ? remainingItems(all) : all;
   if (!items.length) {
-    return { mode, ko: '오늘 남은 일정은 없어! 오늘도 수고했어!', ja: '今日の残りの予定はないよ！今日もおつかれさま！' };
+    return { mode, ko: '오늘 남은 일정은 없어! 오늘도 수고했어!' };
   }
   const text = items.map((i) => `${i.time || '시간 미정'} ${i.text}`).join('\n');
   const cfg = config.load();
   if (!ai.hasKey(cfg)) {
-    return { mode, ko: `${text}\n\n(AI 키를 넣으면 ${CHARACTERS[charId].nameKo} 말투로 알려 줄게!)`, ja: '' };
+    return { mode, ko: `${text}\n\n(AI 키를 넣으면 ${CHARACTERS[charId].nameKo} 말투로 알려 줄게!)` };
   }
   const key = `${schedule.todayKey()}|${charId}|${mode}|${cfg.profile.name}|${cfg.profile.type}|${text}`;
   if (briefCache.has(key)) return briefCache.get(key);
@@ -237,7 +209,7 @@ async function talkSchedule(charId, mode = 'all') {
     return result;
   } catch (err) {
     log(`[schedule] AI 실패: ${err.message}`);
-    return { mode, ko: `(AI 연결 실패: ${err.message})\n${text}`, ja: '' };
+    return { mode, ko: `(AI 연결 실패: ${err.message})\n${text}` };
   }
 }
 
@@ -245,7 +217,7 @@ async function talkChat(role, charId, text) {
   const cfg = config.load();
   if (!ai.hasKey(cfg)) {
     openSettings('ai');
-    return { ko: 'AI 키가 필요해! 설정 창에서 넣어 줘!', ja: 'AIキーが必要だよ！設定画面で入れてね！' };
+    return { ko: 'AI 키가 필요해! 설정 창에서 넣어 줘!' };
   }
   const history = (histories[role] ||= []);
   history.push({ role: 'user', text });
@@ -254,12 +226,12 @@ async function talkChat(role, charId, text) {
       system: systemPrompt(charId, '사용자와 자유롭게 대화하는 친구야. 질문에는 캐릭터 말투로 실제 도움이 되게 답해. 한국어 기준 1~4문장으로 짧게.'),
       messages: history.slice(-12),
     });
-    history.push({ role: 'assistant', text: JSON.stringify({ ko: reply.ko, ja: reply.ja }) });
+    history.push({ role: 'assistant', text: JSON.stringify({ ko: reply.ko }) });
     return reply;
   } catch (err) {
     history.pop();
     log(`[chat] AI 실패: ${err.message}`);
-    return { ko: `앗, 대답을 못 했어… (${err.message})`, ja: '' };
+    return { ko: `앗, 대답을 못 했어… (${err.message})` };
   }
 }
 
@@ -291,13 +263,12 @@ async function makeChatter(charId) {
         text: `지금 시각: ${nowText()}\n이 시간대 주제 힌트: ${topic}\n`
           + `사용자가 지금 듣고 싶어할 만한 혼잣말을 캐릭터 말투로 ${CHATTER_BATCH}개 만들어 줘. `
           + '하나당 한국어 기준 30자 안쪽으로 아주 짧게, 서로 다른 표현으로. '
-          + 'ko에는 한국어 혼잣말을 한 줄에 하나씩(줄바꿈으로 구분), ja에는 같은 순서의 일본어 번역을 한 줄에 하나씩 넣어. 번호는 붙이지 마.',
+          + 'ko에 혼잣말을 한 줄에 하나씩(줄바꿈으로 구분) 넣어. 번호는 붙이지 마.',
       }],
     });
     const split = (s) => (s || '').split('\n').map((t) => t.trim()).filter(Boolean);
     const ko = split(reply.ko);
-    const ja = split(reply.ja);
-    chatterPool = { key, lines: ko.map((k, i) => ({ ko: k, ja: ja[i] || '' })), last: chatterPool.last };
+    chatterPool = { key, lines: ko.map((k) => ({ ko: k })), last: chatterPool.last };
   }
   // 바로 앞에 한 말은 피해서 무작위로 하나
   let i = Math.floor(Math.random() * chatterPool.lines.length);
@@ -326,11 +297,11 @@ function notifyUpdate(kind, version) {
   if (!win || win.isDestroyed()) return;
   const ch = CHARACTERS[currentChar(role)];
   let msg;
-  if (kind === 'latest') msg = { ko: `이미 최신 버전이야! (v${version})`, ja: `もう最新バージョンだよ！（v${version}）` };
-  else if (kind === 'error') msg = { ko: '업데이트 확인이 안 돼… 인터넷 연결을 확인해 줘!', ja: 'アップデートを確認できない…ネット接続を確認してね！' };
+  if (kind === 'latest') msg = { ko: `이미 최신 버전이야! (v${version})` };
+  else if (kind === 'error') msg = { ko: '업데이트 확인이 안 돼… 인터넷 연결을 확인해 줘!' };
   else {
     const v = String(version).replace(/^v/, '');
-    msg = { ko: `${ch.updateLine.ko} (v${v})`, ja: ch.updateLine.ja, button: { kind, label: UPDATE_BUTTON[kind] } };
+    msg = { ko: `${ch.updateLine.ko} (v${v})`, button: { kind, label: UPDATE_BUTTON[kind] } };
   }
   win.webContents.send('pet:update', msg);
 }
@@ -414,10 +385,6 @@ ipcMain.handle('settings:save-profile', (event, { name, type, chatter: freq }) =
   briefCache.clear();
   const prev = config.load().profile;
   config.update({ profile: { name: name.trim(), type, setupDone: true }, chatter: chatter.normalizeFreq(freq) });
-  if (prev.nameJaFor !== name.trim()) {
-    config.update({ profile: { nameJa: '' } });
-    updateNameJa();
-  }
   scheduleChatter();
   return settingsState();
 });
@@ -425,7 +392,6 @@ ipcMain.handle('settings:save-profile', (event, { name, type, chatter: freq }) =
 ipcMain.handle('settings:save', (event, { aiProvider, key }) => {
   briefCache.clear();
   config.update({ aiProvider, apiKeys: { [aiProvider]: key } });
-  if (!config.load().profile.nameJa) updateNameJa();
   talkSchedule(currentChar('schedule'), 'all').catch(() => {}); // 새 키로 미리 받아 두기
   return settingsState();
 });
@@ -434,7 +400,7 @@ ipcMain.handle('settings:test', async (event, { aiProvider, key }) => {
   const cfg = config.load();
   try {
     const reply = await ai.ask({ ...cfg, aiProvider, apiKeys: { ...cfg.apiKeys, [aiProvider]: key } }, {
-      system: '출력은 JSON 하나만: {"ko": "한국어", "ja": "日本語"}',
+      system: '출력은 JSON 하나만: {"ko": "한국어"}',
       messages: [{ role: 'user', text: '"연결 성공"이라고만 답해 줘.' }],
     });
     return { ok: true, model: reply.model };
@@ -511,7 +477,7 @@ ipcMain.on('pet:context-menu', (event) => {
     {
       label: `캐릭터 바꾸기 (지금: ${CHARACTERS[current].nameKo})`,
       submenu: Object.entries(CHARACTERS).map(([id, ch]) => ({
-        label: `${ch.nameKo} (${ch.nameJa})`,
+        label: ch.nameKo,
         type: 'radio',
         checked: id === current,
         click: () => {
@@ -580,7 +546,6 @@ function startNormally() {
     // 켜자마자 오늘 전체 일정을 미리 받아 두기 → 첫 클릭 때 기다리지 않음 (빠른 모델도 이때 찾아 둬요)
     talkSchedule(currentChar('schedule'), 'all').catch(() => {});
   }
-  if (cfg.profile.name && cfg.profile.nameJaFor !== cfg.profile.name) updateNameJa();
   greetOnStart();     // 켜자마자 대표 대사 한마디
   scheduleChatter();  // 그다음부터는 설정한 간격마다
   updater.start({ notify: notifyUpdate, log }); // 10초 뒤 + 6시간마다 새 버전 확인

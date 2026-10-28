@@ -25,7 +25,7 @@ html, body {
 /* 계속 도는 애니메이션은 투명 창을 초당 60번 다시 그려 PC 전체가 느려져요(CPU 약 22%).
    그래서 가끔 한 번씩만 꿈틀하고(wiggle), 말할 때만 통통 튀어요(hop). */
 #pet.wiggle { animation: wiggle 0.8s ease-in-out 1; }
-#pet.talking { animation: hop 0.45s ease-in-out 3; }
+#pet.talking { animation: hop 0.5s ease-in-out infinite; } /* 말하는 동안만 */
 #pet.dragging { animation: none; cursor: grabbing; }
 
 @keyframes wiggle {
@@ -87,7 +87,6 @@ html, body {
 
 #lines { max-height: 240px; overflow-y: auto; }
 #ko { font-size: 15px; line-height: 1.5; font-weight: 600; white-space: pre-wrap; }
-#ja { margin-top: 4px; font-size: 12px; line-height: 1.5; color: #8a786b; white-space: pre-wrap; }
 
 #closeBtn {
   position: absolute;

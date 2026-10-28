@@ -86,7 +86,7 @@ async function shot(name, page, { stub = {}, width, height, query, script, wait 
 }
 
 // 말풍선 장면: pet.js의 함수(say, openEditor 등)를 직접 불러서 상황을 만들어요
-const pet = (info, script) => ({ stub: { info }, width: 340, height: 560, bg: BG, query: { role: info.role }, script, wait: 2600 });
+const pet = (info, script) => ({ stub: { info }, width: 340, height: 560, bg: BG, query: { role: info.role }, script, wait: 9000 }); // 한 글자씩 다 나올 때까지
 
 async function captureAll() {
   await shot('settings-profile', 'settings.html', { stub: { settings: SETTINGS }, width: 444, height: 581,
@@ -99,7 +99,7 @@ async function captureAll() {
   // 대사는 JSON으로 넘겨요 (줄바꿈·따옴표가 스크립트를 깨뜨리지 않게)
   const line = (ko, ja) => JSON.stringify({ ko, ja });
   await shot('bubble-schedule', 'index.html', pet(HACHI, `
-    say(${line('있잖아~ 서연, 오늘 일정 알려줄게!\n\n10:00 팀 회의\n14:00 기획 리뷰\n✨ 19:30 운동 (곧이잖아!)\n\n오늘도 어떻게든 되어라—ッ!',
+    say(${line('있잖아~ 서연, 오늘 일정 알려줄게!\n\n10:00 팀 회의\n14:00 기획 리뷰\n✨ 19:30 운동 (곧이잖아!)\n\n오늘도 어떻게든 되어라—!!',
     'ねえねえソヨン、今日の予定だよ！ 10:00 チーム会議 / 14:00 企画レビュー / ✨19:30 運動（もうすぐじゃん！）なんとかなれーッ！')});
     modeBtn.textContent = '⏰ 남은 일정'; schedBar.classList.remove('hidden');`));
   await shot('bubble-editor', 'index.html', pet(HACHI, `

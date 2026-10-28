@@ -5,7 +5,6 @@ const petApi = window.pet; // preload가 열어 준 기능
 const petEl = $('pet');
 const bubbleEl = $('bubble');
 const koEl = $('ko');
-const jaEl = $('ja');
 const chatForm = $('chatForm');
 const chatInput = $('chatInput');
 const scheduleForm = $('scheduleForm');
@@ -20,9 +19,65 @@ let info = null;
 let hideTimer = null;
 let typing = 0; // 진행 중인 타자 효과 번호 (새 말이 오면 이전 효과 중단)
 
+// ---- 캐릭터 그림: 그림마다 투명 여백이 달라서, 실제로 그려진 부분을 재서 키와 발끝 위치를 맞춰요 ----
+const PET_H = 128;     // 모든 캐릭터의 보이는 키
+const PET_MAX_W = 190; // 옆으로 긴 그림(꼬리·망토)이 너무 커지지 않게
+const fitCache = new Map(); // 그림 주소 → 그려진 영역
+
+function visibleBox(img) {
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const g = canvas.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 24) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  return x1 < 0 ? { x: 0, y: 0, w, h } : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+function fitImage(img, src) {
+  let box = fitCache.get(src);
+  if (!box) {
+    try { box = visibleBox(img); } catch { box = null; }
+    if (box) fitCache.set(src, box);
+  }
+  if (box) {
+    const s = Math.min(PET_H / box.h, PET_MAX_W / box.w);
+    const { offsetWidth: bw, offsetHeight: bh } = petEl;
+    Object.assign(img.style, {
+      position: 'absolute', maxWidth: 'none',
+      width: `${img.naturalWidth * s}px`, height: `${img.naturalHeight * s}px`,
+      left: `${bw / 2 - (box.x + box.w / 2) * s}px`, top: `${bh - (box.y + box.h) * s}px`,
+    });
+  }
+  img.style.visibility = '';
+}
+
 function setPetImage(kind) {
   const src = (kind === 'talk' && info.images.talk) || info.images.idle;
-  petEl.innerHTML = src ? `<img src="${src}" alt="">` : placeholderSvg(info.id, info.color);
+  if (!src) {
+    petEl.innerHTML = placeholderSvg(info.id, info.color);
+    return;
+  }
+  const img = new Image();
+  img.alt = '';
+  img.style.visibility = 'hidden'; // 크기를 맞춘 뒤에 보여 줘요
+  img.onload = () => fitImage(img, src);
+  img.onerror = () => { img.style.visibility = ''; };
+  img.src = src;
+  petEl.replaceChildren(img);
 }
 
 // ---- 말풍선 ----
@@ -38,6 +93,7 @@ function closeBubble() {
   clearTimeout(hideTimer);
   typing++;
   bubbleEl.classList.add('hidden');
+  petEl.classList.remove('talking');
   scheduleForm.classList.add('hidden');
   schedBar.classList.add('hidden');
   updateBar.classList.add('hidden');
@@ -45,22 +101,23 @@ function closeBubble() {
   petApi.setIgnore(true);
 }
 
-async function say({ ko, ja }, { autoHide } = {}) {
+const TYPE_MS = 45; // 한 글자씩 나오는 속도 (말하는 모션도 이 동안 계속돼요)
+
+async function say({ ko }, { autoHide } = {}) {
   const my = ++typing;
   clearTimeout(hideTimer);
   openBubble();
   koEl.textContent = '';
-  jaEl.textContent = '';
   setPetImage('talk');
-  petEl.classList.remove('talking');
-  void petEl.offsetWidth;
   petEl.classList.add('talking');
   for (const ch of ko) {
     if (my !== typing) return;
     koEl.textContent += ch;
-    await new Promise((r) => setTimeout(r, 15));
+    await new Promise((r) => setTimeout(r, TYPE_MS));
   }
-  jaEl.textContent = ja || '';
+  await new Promise((r) => setTimeout(r, 700)); // 다 말한 뒤에도 잠깐 더 들썩
+  if (my !== typing) return;
+  petEl.classList.remove('talking');
   setPetImage('idle');
   if (autoHide) hideTimer = setTimeout(() => { if (!bubbleEl.matches(':hover')) closeBubble(); }, autoHide);
 }
@@ -69,7 +126,6 @@ function thinking() {
   typing++;
   openBubble();
   koEl.textContent = '음… 잠깐만…';
-  jaEl.textContent = 'えっと…ちょっと待ってね…';
 }
 
 // ---- 클릭 동작 (역할별) ----
@@ -81,7 +137,7 @@ async function onClick() {
     briefSchedule();
   } else {
     chatForm.classList.remove('hidden');
-    say({ ko: `${info.nameKo}한테 말 걸어 봐!`, ja: `${info.nameJa}に話しかけてみて！` });
+    say({ ko: `${info.nameKo}한테 말 걸어 봐!` });
     chatInput.focus();
   }
 }
@@ -171,7 +227,7 @@ scheduleForm.addEventListener('submit', async (e) => {
 });
 
 editBtn.addEventListener('click', async () => {
-  say({ ko: '오늘 전체 일정이야! 고칠 게 있으면 고쳐 줘!', ja: '今日の予定ぜんぶだよ！直すところがあったら直してね！' });
+  say({ ko: '오늘 전체 일정이야! 고칠 게 있으면 고쳐 줘!' });
   openEditor(await petApi.getSchedule());
 });
 
@@ -193,12 +249,12 @@ petApi.onUpdate((msg) => {
   say(msg, msg.button ? {} : { autoHide: 8000 });
 });
 updateBtn.addEventListener('click', () => {
-  if (updateKind === 'install') say({ ko: '업데이트하고 금방 다시 올게!', ja: 'アップデートしてすぐ戻ってくるね！' });
+  if (updateKind === 'install') say({ ko: '업데이트하고 금방 다시 올게!' });
   petApi.doUpdate(updateKind);
 });
 
 petApi.onEditSchedule(async () => {
-  say({ ko: '오늘 일정 적어 줘!', ja: '今日の予定を書いてね！' });
+  say({ ko: '오늘 일정 적어 줘!' });
   openEditor(await petApi.getSchedule());
 });
 
