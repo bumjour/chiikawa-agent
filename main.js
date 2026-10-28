@@ -62,8 +62,9 @@ function createPet(role, index) {
   const saved = cfg.positions[role];
   // 저장된 위치가 화면 밖이면(창 크기·모니터가 바뀐 경우) 화면 안으로 당겨 와요
   const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-  const x = clamp(saved ? saved.x : workArea.x + workArea.width - (index + 1) * (WIN_W - 80) - 40,
-    workArea.x - WIN_W / 2, workArea.x + workArea.width - WIN_W / 2);
+  // 말풍선(폭 290)이 창 양옆 25px 안쪽에 있어서, 창이 화면 밖으로 25px까지만 나가도록 막아요
+  const x = clamp(saved ? saved.x : workArea.x + workArea.width - WIN_W - index * (WIN_W - 80),
+    workArea.x - 25, workArea.x + workArea.width - WIN_W + 25);
   const y = clamp(saved ? saved.y : workArea.y + workArea.height - WIN_H,
     workArea.y - WIN_H + 220, workArea.y + workArea.height - WIN_H);
 
