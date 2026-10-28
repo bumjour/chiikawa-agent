@@ -47,8 +47,24 @@ function characterInfo(role) {
     nameJa: CHARACTERS[ch].nameJa,
     color: CHARACTERS[ch].color,
     images: { idle: imageFor(ch, 'idle'), talk: imageFor(ch, 'talk') },
+    appearance: appearanceOf(role),
   };
 }
+
+// ---- 크기·투명도 (역할별로 저장, 캐릭터 화면에서 직접 조절) ----
+const SCALE_RANGE = [0.5, 1.5];   // 크기 50% ~ 150%
+const OPACITY_RANGE = [0.1, 1];   // 투명도: 0에 가깝게 ~ 또렷하게
+const clampTo = (v, [min, max], d) => (Number.isFinite(v) ? Math.min(Math.max(v, min), max) : d);
+function appearanceOf(role) {
+  const a = config.load().appearance?.[role] || {};
+  return { scale: clampTo(a.scale, SCALE_RANGE, 1), opacity: clampTo(a.opacity, OPACITY_RANGE, 1) };
+}
+ipcMain.on('pet:set-appearance', (event, a) => {
+  const role = roleOf(event);
+  config.update({ appearance: { [role]: {
+    scale: clampTo(Number(a.scale), SCALE_RANGE, 1), opacity: clampTo(Number(a.opacity), OPACITY_RANGE, 1),
+  } } });
+});
 
 function refreshPets(charId) {
   for (const [role, win] of Object.entries(pets)) {
@@ -84,6 +100,8 @@ function createPet(role, index) {
   win.setIgnoreMouseEvents(true, { forward: true });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'), { query: { role } });
   pets[role] = win;
+  // 화면 배율은 항상 100%로 (시연이 중간에 끊기면 1.4배가 저장돼서 말풍선이 창 밖으로 잘려요). 시연 중엔 시연이 다시 맞춰요
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(1));
 
   // 화면이 죽어서 빈 창이 되면 기록하고 다시 그리기
   win.webContents.on('render-process-gone', (_e, details) => {
@@ -488,6 +506,7 @@ ipcMain.on('pet:context-menu', (event) => {
       })),
     },
     { label: `${CHARACTERS[current].nameKo} 모습 고르기…`, click: () => openPicker(current) },
+    { label: '크기·투명도 조절', click: () => win.webContents.send('pet:adjust') },
     { type: 'separator' },
     ...(role === 'schedule' ? [{ label: '오늘 일정 적기', click: () => win.webContents.send('schedule:edit') }] : []),
     ...(role === 'chat' ? [{ label: '혼잣말 지금 듣기', click: () => runChatter() }] : []),

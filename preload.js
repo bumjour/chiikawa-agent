@@ -15,5 +15,7 @@ contextBridge.exposeInMainWorld('pet', {
   onEditSchedule: (fn) => ipcRenderer.on('schedule:edit', () => fn()),
   onChatter: (fn) => ipcRenderer.on('pet:chatter', (_e, line) => fn(line)),
   onUpdate: (fn) => ipcRenderer.on('pet:update', (_e, msg) => fn(msg)),
+  onAdjust: (fn) => ipcRenderer.on('pet:adjust', () => fn()),
+  setAppearance: (a) => ipcRenderer.send('pet:set-appearance', a),
   doUpdate: (kind) => ipcRenderer.send('pet:do-update', kind),
 });

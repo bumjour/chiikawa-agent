@@ -74,6 +74,8 @@ function startInput() {
       cur = { x, y };
     },
     async click() { await send('down'); await wait(70); await send('up'); },
+    async down() { await send('down'); },
+    async up() { await send('up'); },
     async rightClick() { await send('rdown'); await wait(70); await send('rup'); },
     async keys(k) { await send('keys ' + k); },
     async front(processName) { await send('front ' + processName); }, // 그 프로그램 창을 최대화해서 맨 앞으로
@@ -144,7 +146,7 @@ function recoverIfNeeded(config, schedule) {
   if (!fs.existsSync(f)) return false;
   try {
     const saved = JSON.parse(fs.readFileSync(f, 'utf8'));
-    config.update({ characters: saved.characters, profile: saved.profile, positions: saved.positions || {} });
+    config.update({ characters: saved.characters, profile: saved.profile, positions: saved.positions || {}, appearance: saved.appearance || {} });
     if (schedule && saved.schedule) schedule.saveToday(saved.schedule);
   } catch { /* 무시 */ }
   fs.unlinkSync(f);
@@ -224,6 +226,7 @@ async function run(ctx) {
   const orig = {
     characters: { ...config.load().characters }, profile: { ...config.load().profile },
     positions: { ...config.load().positions }, schedule: schedule.getToday(),
+    appearance: { schedule: { scale: 1, opacity: 1 }, chat: { scale: 1, opacity: 1 }, ...config.load().appearance },
   };
   fs.writeFileSync(restoreFile(config), JSON.stringify(orig, null, 2));
   const origBounds = { schedule: pets.schedule.getBounds(), chat: pets.chat.getBounds() };
@@ -331,7 +334,48 @@ async function run(ctx) {
     await step(700);
     await input.keys('{ENTER}');
     await step(9500);
-    // ⑤ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
+    // ⑤ 크기·투명도 조절: 우클릭 → 크기·투명도 조절 → 모서리 점 끌어 키우기 → 막대로 투명하게
+    await pets.chat.webContents.executeJavaScript('closeBubble(), true');
+    await step(600);
+    const p = await center('chat', '#pet');
+    await input.moveTo(p.x, p.y, 500); await wait(250); await input.rightClick();
+    await step(900);
+    for (let i = 0; i < 3; i++) { await input.keys('{DOWN}'); await step(300); } // 캐릭터 바꾸기 → 모습 고르기 → 크기·투명도 조절
+    await step(400);
+    await input.keys('{ENTER}');
+    await step(900);
+    if (!(await pets.chat.webContents.executeJavaScript("document.body.classList.contains('adjusting')"))) {
+      say('메뉴로 조절 화면을 못 엶 → 직접 열기');
+      await pets.chat.webContents.executeJavaScript('openAdjust(), true');
+      await step(500);
+    }
+    // 오른쪽 위 점을 바깥으로 끌어 크게 → 조금 줄이기
+    const h = await center('chat', '#adjustBox .handle[data-c="ne"]');
+    if (h) {
+      await input.moveTo(h.x, h.y, 600); await wait(200);
+      await input.down();
+      await input.moveTo(h.x + 70, h.y - 80, 1100);
+      await wait(400);
+      await input.moveTo(h.x + 35, h.y - 40, 700);
+      await input.up();
+    }
+    await step(800);
+    // 투명도 막대: 왼쪽으로 끌어 흐리게 → 조금 되돌리기
+    const bar = await pets.chat.webContents.executeJavaScript(`(() => { const b = opacityInput.getBoundingClientRect(); return { l: b.left, r: b.right, y: b.top + b.height / 2 }; })()`);
+    const zf = pets.chat.webContents.getZoomFactor(); const [wx, wy] = pets.chat.getPosition();
+    const sx = (v) => Math.round(wx + v * zf);
+    await input.moveTo(sx(bar.r - 6), Math.round(wy + bar.y * zf), 600); await wait(200);
+    await input.down();
+    await input.moveTo(sx(bar.l + (bar.r - bar.l) * 0.15), Math.round(wy + bar.y * zf), 1300);
+    await wait(500);
+    await input.moveTo(sx(bar.l + (bar.r - bar.l) * 0.45), Math.round(wy + bar.y * zf), 700);
+    await input.up();
+    await step(900);
+    await clickOn('chat', '#adjustDone', 500);
+    await step(400);
+    pets.chat.webContents.send('pet:chatter', { ko: '이 정도면… 일할 때도 안 들키겠군. 키야~' });
+    await step(4500);
+    // ⑥ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
     await input.moveTo(full.x + full.width * 0.9, full.y + full.height * 0.15, 500);
     pets.schedule.hide();
     pets.chat.hide();
@@ -352,7 +396,7 @@ async function run(ctx) {
   zoom = 1;
   setClock(null);
   schedule.saveToday(orig.schedule);
-  config.update({ profile: orig.profile });
+  config.update({ profile: orig.profile, appearance: orig.appearance });
   await setChar('schedule', orig.characters.schedule);
   await setChar('chat', orig.characters.chat);
   for (const role of ['schedule', 'chat']) {

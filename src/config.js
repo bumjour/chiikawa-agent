@@ -15,6 +15,7 @@ const DEFAULTS = {
   chatter: '10m', // 혼잣말 간격: 10s | 30s | 1m | 5m | 10m | 30m | 1h | off
   looks: {}, // 캐릭터별 고른 모습 { hachiware: { idle: '주소 또는 파일', talk: ... } }
   positions: {},
+  appearance: {}, // 역할별 크기·투명도 { chat: { scale: 1.2, opacity: 0.6 } }
 };
 
 function configPath() {

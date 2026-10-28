@@ -27,6 +27,17 @@
     </div>
   </div>
   <div id="pet"></div>
+  <!-- 크기·투명도 조절: 모서리 점을 끌어 크기, 아래 막대로 투명도 -->
+  <div id="adjustBox" class="hidden">
+    <span class="handle" data-c="nw"></span><span class="handle" data-c="ne"></span>
+    <span class="handle" data-c="sw"></span><span class="handle" data-c="se"></span>
+  </div>
+  <div id="adjustBar" class="hidden">
+    <span class="ic" title="투명하게">◌</span>
+    <input id="opacity" type="range" min="10" max="100" step="1">
+    <span class="ic" title="또렷하게">●</span>
+    <button id="adjustDone" title="완료">완료</button>
+  </div>
   <div id="nameTag"></div>
   <script src="placeholder.js"></script>
   <script src="pet.js"></script>

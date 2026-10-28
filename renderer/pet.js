@@ -14,14 +14,19 @@ const modeBtn = $('modeBtn');
 const editBtn = $('editBtn');
 const updateBar = $('updateBar');
 const updateBtn = $('updateBtn');
+const adjustBox = $('adjustBox');
+const adjustBar = $('adjustBar');
+const opacityInput = $('opacity');
+let look = { scale: 1, opacity: 1 };
 
 let info = null;
 let hideTimer = null;
 let typing = 0; // 진행 중인 타자 효과 번호 (새 말이 오면 이전 효과 중단)
 
 // ---- 캐릭터 그림: 그림마다 투명 여백이 달라서, 실제로 그려진 부분을 재서 키와 발끝 위치를 맞춰요 ----
-const PET_H = 128;     // 모든 캐릭터의 보이는 키
+const PET_H = 128;     // 모든 캐릭터의 보이는 키 (크기 100% 기준)
 const PET_MAX_W = 190; // 옆으로 긴 그림(꼬리·망토)이 너무 커지지 않게
+let petScale = 1;      // 우클릭 → 크기
 const fitCache = new Map(); // 그림 주소 → 그려진 영역
 
 function visibleBox(img) {
@@ -54,7 +59,7 @@ function fitImage(img, src) {
     if (box) fitCache.set(src, box);
   }
   if (box) {
-    const s = Math.min(PET_H / box.h, PET_MAX_W / box.w);
+    const s = Math.min(PET_H / box.h, PET_MAX_W / box.w) * petScale;
     const { offsetWidth: bw, offsetHeight: bh } = petEl;
     Object.assign(img.style, {
       position: 'absolute', maxWidth: 'none',
@@ -259,12 +264,12 @@ petApi.onEditSchedule(async () => {
 });
 
 $('closeBtn').addEventListener('click', closeBubble);
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBubble(); });
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAdjust(); closeBubble(); } });
 
 // ---- 마우스: 캐릭터·말풍선 위에서만 클릭을 받고 나머지는 뒤 창으로 통과 ----
 let drag = null;
 
-for (const el of [petEl, bubbleEl]) {
+for (const el of [petEl, bubbleEl, adjustBox, adjustBar]) {
   el.addEventListener('mouseenter', () => petApi.setIgnore(false));
   el.addEventListener('mouseleave', () => { if (!drag) petApi.setIgnore(true); });
 }
@@ -292,8 +297,8 @@ window.addEventListener('mouseup', (e) => {
   drag = null;
   petEl.classList.remove('dragging');
   if (wasDrag) petApi.dragEnd();
-  else onClick();
-  if (!petEl.matches(':hover') && !bubbleEl.matches(':hover')) petApi.setIgnore(true);
+  else if (!document.body.classList.contains('adjusting')) onClick(); // 조절 중엔 말풍선 대신 조절만
+  if (!petEl.matches(':hover') && !bubbleEl.matches(':hover') && !document.body.classList.contains('adjusting')) petApi.setIgnore(true);
 });
 
 petEl.addEventListener('contextmenu', (e) => {
@@ -314,10 +319,69 @@ function scheduleWiggle() {
 }
 petEl.addEventListener('animationend', () => petEl.classList.remove('wiggle', 'talking'));
 
+// ---- 크기·투명도: 가로세로 비율은 그대로, 캐릭터 전체 크기만 / 투명도는 캐릭터에만 (말풍선은 또렷하게) ----
+
+function applyAppearance({ scale = look.scale, opacity = look.opacity } = {}) {
+  look = { scale: Math.min(Math.max(scale, 0.5), 1.5), opacity: Math.min(Math.max(opacity, 0.1), 1) };
+  const rescale = petScale !== look.scale;
+  petScale = look.scale;
+  document.documentElement.style.setProperty('--pet-scale', look.scale);
+  document.documentElement.style.setProperty('--pet-opacity', look.opacity);
+  const img = petEl.querySelector('img');
+  if (rescale && img && img.complete) fitImage(img, img.getAttribute('src'));
+}
+
+// 조절 화면 열기·닫기 (우클릭 → 크기·투명도 조절)
+function openAdjust() {
+  closeBubble();
+  document.body.classList.add('adjusting');
+  adjustBox.classList.remove('hidden');
+  adjustBar.classList.remove('hidden');
+  opacityInput.value = Math.round(look.opacity * 100);
+  petApi.setIgnore(false);
+}
+function closeAdjust() {
+  if (!document.body.classList.contains('adjusting')) return;
+  document.body.classList.remove('adjusting');
+  adjustBox.classList.add('hidden');
+  adjustBar.classList.add('hidden');
+  petApi.setAppearance(look);
+  petApi.setIgnore(true);
+}
+petApi.onAdjust(openAdjust);
+$('adjustDone').addEventListener('click', closeAdjust);
+opacityInput.addEventListener('input', () => applyAppearance({ opacity: opacityInput.value / 100 }));
+opacityInput.addEventListener('change', () => petApi.setAppearance(look));
+
+// 모서리 점 끌기: 캐릭터 발밑 가운데를 기준으로, 점이 멀어지면 커지고 가까워지면 작아져요
+let resize = null;
+for (const h of adjustBox.querySelectorAll('.handle')) {
+  h.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    h.setPointerCapture(e.pointerId);
+    const r = petEl.getBoundingClientRect();
+    const ax = r.left + r.width / 2;
+    const ay = r.bottom;
+    resize = { ax, ay, d0: Math.hypot(e.clientX - ax, e.clientY - ay), s0: look.scale };
+  });
+  h.addEventListener('pointermove', (e) => {
+    if (!resize) return;
+    const d = Math.hypot(e.clientX - resize.ax, e.clientY - resize.ay);
+    applyAppearance({ scale: resize.s0 * (d / Math.max(resize.d0, 1)) });
+  });
+  h.addEventListener('pointerup', () => {
+    if (!resize) return;
+    resize = null;
+    petApi.setAppearance(look);
+  });
+}
+
 // ---- 시작 ----
 scheduleWiggle();
 (async () => {
   info = await petApi.init();
+  applyAppearance(info.appearance);
   $('nameTag').textContent = `${info.nameKo} · ${info.roleLabel}`;
   chatInput.placeholder = `${info.nameKo}에게 말 걸기…`;
   setPetImage('idle');

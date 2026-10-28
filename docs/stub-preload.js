@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('pet', {
   setIgnore: noop, getPosition: async () => [0, 0], moveTo: noop, dragEnd: noop, openMenu: noop,
   talk: async () => ({ ko: '', ja: '' }),
   getSchedule: async () => [], saveSchedule: async () => {},
-  onEditSchedule: noop, onChatter: noop, onUpdate: noop, doUpdate: noop,
+  onEditSchedule: noop, onChatter: noop, onUpdate: noop, doUpdate: noop, onAdjust: noop, setAppearance: noop,
 });
 contextBridge.exposeInMainWorld('settings', {
   get: async () => stub.settings, save: async () => stub.settings, saveProfile: async () => stub.settings,
