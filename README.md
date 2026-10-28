@@ -7,14 +7,19 @@
 - 캐릭터 7종: 치이카와 · 하치와레 · 우사기 · 모몽가 · 쿠리만쥬 · 시사 · 랏코
 - AI: Google Gemini(무료 등급) · Anthropic Claude · OpenAI 중 선택. API 키는 각자 발급해서 넣어요.
 
-## 설치
+## ⬇️ 다운로드
 
-[Releases](../../releases)에서 운영체제에 맞는 파일을 받아 실행하세요.
+**다운로드 페이지: https://chiikawa-agent.github.io/chiikawa-agent/**
 
-- Windows: `ChiikawaAgent-win-x.x.x.exe`
-  - 서명되지 않은 앱이라 "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**을 누르세요.
-- macOS: `ChiikawaAgent-mac-x.x.x-arm64.dmg`(M1~M4 칩) / `-x64.dmg`(인텔 칩)
-  - 처음 열 때 경고가 뜨면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**를 누르세요.
+| 내 컴퓨터 | 바로 받기 |
+|---|---|
+| 🪟 Windows 10 / 11 | [ChiikawaAgent-Windows.exe](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Windows.exe) |
+| 🍎 맥 · M1~M4 칩 | [ChiikawaAgent-Mac-AppleSilicon.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg) |
+| 💻 맥 · 인텔 칩 | [ChiikawaAgent-Mac-Intel.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-Intel.dmg) |
+| 📄 설치 가이드 PDF | [ChiikawaAgent-Guide.pdf](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Guide.pdf) |
+
+- Windows: "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**
+- 맥: 처음 열 때 경고가 뜨면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
 
 처음 실행하면 설정 창에서 이름, 직장인/학생, AI 키를 순서대로 입력해요.
 

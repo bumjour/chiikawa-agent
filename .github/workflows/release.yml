@@ -60,8 +60,13 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      - name: 가이드 PDF 함께 올리기
-        run: cp release-assets/*.pdf dist/ 2>/dev/null || true
+      - name: 가이드 PDF 함께 올리기, 맥 파일 이름을 칩 이름으로
+        run: |
+          cp release-assets/*.pdf dist/ 2>/dev/null || true
+          cd dist
+          [ -f ChiikawaAgent-Mac-arm64.dmg ] && mv ChiikawaAgent-Mac-arm64.dmg ChiikawaAgent-Mac-AppleSilicon.dmg
+          [ -f ChiikawaAgent-Mac-x64.dmg ] && mv ChiikawaAgent-Mac-x64.dmg ChiikawaAgent-Mac-Intel.dmg
+          ls -la
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
@@ -69,13 +74,18 @@ jobs:
           files: dist/*
           overwrite_files: true
           body: |
-            ## 다운로드
-            | 컴퓨터 | 파일 |
+            ## ⬇️ 바로 받기 (눌러서 다운로드)
+            | 내 컴퓨터 | 다운로드 |
             |---|---|
-            | Windows 10/11 | `ChiikawaAgent-win-*.exe` |
-            | 맥 (M1~M4 칩) | `ChiikawaAgent-mac-*-arm64.dmg` |
-            | 맥 (인텔 칩) | `ChiikawaAgent-mac-*-x64.dmg` |
+            | 🪟 **Windows 10 / 11** | **[ChiikawaAgent-Windows.exe](https://github.com/chiikawa-agent/chiikawa-agent/releases/download/${{ inputs.tag || github.ref_name }}/ChiikawaAgent-Windows.exe)** |
+            | 🍎 **맥 · M1~M4 칩** | **[ChiikawaAgent-Mac-AppleSilicon.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/download/${{ inputs.tag || github.ref_name }}/ChiikawaAgent-Mac-AppleSilicon.dmg)** |
+            | 💻 **맥 · 인텔 칩** | **[ChiikawaAgent-Mac-Intel.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/download/${{ inputs.tag || github.ref_name }}/ChiikawaAgent-Mac-Intel.dmg)** |
+            | 📄 **설치 가이드 PDF** | **[ChiikawaAgent-Guide.pdf](https://github.com/chiikawa-agent/chiikawa-agent/releases/download/${{ inputs.tag || github.ref_name }}/ChiikawaAgent-Guide.pdf)** |
 
+            더 보기 쉬운 다운로드 페이지: **https://chiikawa-agent.github.io/chiikawa-agent/**
+            맥 칩 확인:  메뉴 → 이 Mac에 관하여 → '칩'이 Apple M○ 이면 M칩, Intel 이면 인텔
+
+            ## 설치할 때
             - **Windows**: "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**
             - **맥**: 처음 열 때 경고가 뜨면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
               ("손상되었기 때문에 열 수 없습니다"가 뜨면 터미널에 `xattr -cr "/Applications/치이카와 에이전트.app"`)

@@ -79,7 +79,7 @@ $('save').addEventListener('click', async () => {
   if (firstRun) $('welcome').innerHTML = '반가워요! 👋 처음 한 번만 설정하면 돼요.<br>캐릭터들이 나에게 맞춰 말할 수 있게 알려 주세요.';
   $('name').value = current.profile.name || '';
   setType(current.profile.type || 'worker');
-  $('chatter').value = current.chatter || 'sometimes';
+  $('chatter').value = current.chatter || '10m';
   providerEl.value = current.aiProvider;
   keyEl.value = current.apiKeys[current.aiProvider] || '';
   $('ver').textContent = `버전 ${current.version}`;

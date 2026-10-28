@@ -99,8 +99,8 @@
   <script>document.querySelectorAll('.ph').forEach((el) => { el.innerHTML = placeholderSvg(el.dataset.id, el.dataset.color); });</script>
   <h1>치이카와 에이전트 설치 방법</h1>
   <p class="sub">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화하는 방법 A to Z</p>
-  <div class="dl"><div class="t">⬇️ 무료 다운로드 (Windows · 맥)</div><div class="u">github.com/chiikawa-agent/chiikawa-agent/releases</div></div>
-  <p class="meta">버전 0.2.1 · Windows 10/11 · macOS 13 이상</p>
+  <div class="dl"><div class="t">⬇️ 무료 다운로드 (Windows · 맥)</div><div class="u">chiikawa-agent.github.io/chiikawa-agent</div></div>
+  <p class="meta">버전 0.2.2 · Windows 10/11 · macOS 13 이상</p>
   <div class="minifeat">
     <div>📅<b>일정 비서</b>오늘 일정을 캐릭터 말투로<br>(한국어 + 일본어)</div>
     <div>💬<b>AI 대화</b>캐릭터와 자유롭게 대화</div>
@@ -113,13 +113,13 @@
 <!-- ───────────── 바로 받기 + 목차 ───────────── -->
 <section class="page">
   <h2>⬇️ 바로 받기</h2>
-  <div class="dl" style="margin-bottom:4mm"><div class="t">다운로드 페이지 (무료)</div><div class="u">github.com/chiikawa-agent/chiikawa-agent/releases</div></div>
-  <p>다운로드 페이지에서 가장 위 버전의 <b>Assets</b>를 펼치고, 내 컴퓨터에 맞는 파일 하나만 받으면 돼요.</p>
+  <div class="dl" style="margin-bottom:4mm"><div class="t">다운로드 페이지 (무료)</div><div class="u">chiikawa-agent.github.io/chiikawa-agent</div></div>
+  <p>다운로드 페이지에서 <b>내 컴퓨터에 맞는 버튼 하나</b>만 누르면 돼요. 내 컴퓨터용 버튼은 노란색으로 표시돼요.</p>
   <table>
     <tr><th style="width:30%">내 컴퓨터</th><th style="width:44%">받을 파일</th><th>확인 방법</th></tr>
-    <tr><td><b>Windows 10 / 11</b></td><td><code>ChiikawaAgent-win-0.2.1.exe</code></td><td>-</td></tr>
-    <tr><td><b>맥 (M1~M4 칩)</b></td><td><code>ChiikawaAgent-mac-0.2.1-arm64.dmg</code></td><td rowspan="2"> 메뉴 → 이 Mac에 관하여 → "칩"이 Apple M○ 이면 M칩, Intel 이면 인텔</td></tr>
-    <tr><td><b>맥 (인텔 칩)</b></td><td><code>ChiikawaAgent-mac-0.2.1-x64.dmg</code></td></tr>
+    <tr><td><b>Windows 10 / 11</b></td><td><code>ChiikawaAgent-Windows.exe</code></td><td>-</td></tr>
+    <tr><td><b>맥 (M1~M4 칩)</b></td><td><code>ChiikawaAgent-Mac-AppleSilicon.dmg</code></td><td rowspan="2"> 메뉴 → 이 Mac에 관하여 → "칩"이 Apple M○ 이면 M칩, Intel 이면 인텔</td></tr>
+    <tr><td><b>맥 (인텔 칩)</b></td><td><code>ChiikawaAgent-Mac-Intel.dmg</code></td></tr>
   </table>
 
   <h3>3단계로 끝내기 (약 6분)</h3>
@@ -151,8 +151,8 @@
   <h2><span class="no">01</span>다운로드 · 설치</h2>
   <h3>Windows</h3>
   <ol class="steps">
-    <li>다운로드 페이지 <code>github.com/chiikawa-agent/chiikawa-agent/releases</code> 에 들어가요.</li>
-    <li>가장 위 버전의 <b>Assets</b>에서 <code>ChiikawaAgent-win-0.2.1.exe</code> 를 눌러 받아요. (약 115MB)</li>
+    <li>다운로드 페이지 <code>chiikawa-agent.github.io/chiikawa-agent</code> 에 들어가요.</li>
+    <li><b>Windows</b> 버튼을 눌러 <code>ChiikawaAgent-Windows.exe</code> 를 받아요. (약 115MB)</li>
     <li>받은 파일을 더블클릭해요.</li>
     <li>파란 <b>"Windows의 PC 보호"</b> 창이 뜨면 <span class="menu">추가 정보</span> → <span class="menu">실행</span> 을 눌러요.</li>
     <li>설치 창에서 설치 위치를 확인하고 <span class="menu">설치</span> 를 눌러요. 끝나면 바탕화면과 시작 메뉴에 <b>치이카와 에이전트</b>가 생겨요.</li>
@@ -162,7 +162,7 @@
 
   <h3>macOS (맥)</h3>
   <ol class="steps">
-    <li>다운로드 페이지에서 <code>ChiikawaAgent-mac-0.2.1-arm64.dmg</code>(M1~M4 칩) 또는 <code>ChiikawaAgent-mac-0.2.1-x64.dmg</code>(인텔 칩)를 받아요. 내 칩은 <span class="menu"> 메뉴 → 이 Mac에 관하여</span> 에서 확인해요.</li>
+    <li>다운로드 페이지에서 <b>맥 · M1~M4 칩</b>(<code>ChiikawaAgent-Mac-AppleSilicon.dmg</code>) 또는 <b>맥 · 인텔 칩</b>(<code>ChiikawaAgent-Mac-Intel.dmg</code>) 버튼을 눌러 받아요. 내 칩은 <span class="menu"> 메뉴 → 이 Mac에 관하여</span> 에서 확인해요.</li>
     <li>dmg를 열고 <b>치이카와 에이전트</b>를 <b>응용 프로그램</b> 폴더로 끌어다 놓아요.</li>
     <li>처음 열 때 "열 수 없음" 경고가 뜨면 <span class="menu">완료</span> 로 닫아요. (<span class="menu">휴지통으로 이동</span> 은 누르지 마세요)</li>
     <li><span class="menu">시스템 설정 → 개인정보 보호 및 보안</span> 맨 아래의 <span class="menu">그래도 열기</span> → 암호/Touch ID → <span class="menu">열기</span></li>
@@ -231,7 +231,7 @@
   <ul>
     <li><b>불리고 싶은 이름</b>: 캐릭터가 이 이름으로 불러 줘요. 일본어 문장에서는 가타카나로 바뀌어요. (예: 서연 → ソヨン)</li>
     <li><b>직장인 / 학생</b>: 시간대별 혼잣말과 대화 주제가 달라져요.</li>
-    <li><b>혼잣말</b>: 자주(15~30분마다) · 가끔(40~80분마다) · 끄기</li>
+    <li><b>혼잣말 간격</b>: 10초 · 30초 · 1분 · 5분 · 10분(기본) · 30분 · 1시간 · 끄기</li>
   </ul>
   <h3>② AI 연결</h3>
   <ol class="steps">
@@ -305,7 +305,7 @@
     </div>
     <div class="col">
       <h3 style="margin-top:0">혼잣말</h3>
-      <p>AI 대화 캐릭터가 가끔 지금 시간대에 듣고 싶을 만한 한마디를 말풍선으로 띄워요. 12초 뒤 저절로 사라져요.</p>
+      <p>앱을 <b>켜자마자</b> AI 대화 캐릭터가 대표 대사로 한마디 하고, 그다음부터는 정한 간격마다 지금 시간대에 듣고 싶을 만한 말을 말풍선으로 띄워요. 12초 뒤 저절로 사라져요.</p>
       <table>
         <tr><th>시간</th><th>직장인</th><th>학생</th></tr>
         <tr><td>아침</td><td>출근길, 커피</td><td>등교, 아침밥</td></tr>
@@ -314,7 +314,7 @@
         <tr><td>저녁</td><td>퇴근, 오늘도 수고했어</td><td>하교·학원, 숙제</td></tr>
         <tr><td>밤</td><td colspan="2">잘 시간이야, 폰 그만 보고 자기</td></tr>
       </table>
-      <p>빈도는 <span class="menu">내 정보·혼잣말 설정…</span> 에서, 지금 바로 듣고 싶으면 우클릭 → <span class="menu">혼잣말 지금 듣기</span></p>
+      <p>간격(10초~1시간)은 <span class="menu">내 정보·혼잣말 설정…</span> 에서, 지금 바로 듣고 싶으면 우클릭 → <span class="menu">혼잣말 지금 듣기</span></p>
     </div>
   </div>
   <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
@@ -338,7 +338,7 @@
     <tr><td>○○ 모습 고르기…</td><td>평소 모습 / 말할 때 모습 그림 고르기, 내 이미지 추가 (07 참고)</td></tr>
     <tr><td>오늘 일정 적기</td><td>(일정 비서) 일정 입력칸 열기</td></tr>
     <tr><td>혼잣말 지금 듣기</td><td>(AI 대화) 혼잣말 한마디 바로 듣기</td></tr>
-    <tr><td>내 정보·혼잣말 설정…</td><td>이름, 직장인/학생, 혼잣말 빈도</td></tr>
+    <tr><td>내 정보·혼잣말 설정…</td><td>이름, 직장인/학생, 혼잣말 간격</td></tr>
     <tr><td>AI 키 설정…</td><td>AI 서비스·키 바꾸기, 연결 테스트</td></tr>
     <tr><td>고급</td><td>설정 파일 열기, 이미지 폴더 열기, 다시 불러오기, 다시 시작</td></tr>
     <tr><td>정보</td><td>버전, 비공식·비영리 고지, 개인정보 안내</td></tr>
@@ -412,7 +412,7 @@
     <tr><th style="width:34%">증상</th><th>해결</th></tr>
     <tr><td>설치할 때 "PC 보호" 창이 떠요</td><td><span class="menu">추가 정보 → 실행</span> (01 참고)</td></tr>
     <tr><td>캐릭터가 안 보여요</td><td>이미 켜져 있을 수 있어요. 화면 오른쪽 아래를 확인하고, 그래도 없으면 시작 메뉴에서 다시 실행하세요. 여러 모니터를 쓰다 하나를 뺐다면 우클릭 → <span class="menu">고급 → 설정 파일 열기</span> 에서 <code>"positions"</code> 내용을 <code>{}</code> 로 비우고 다시 시작하세요.</td></tr>
-    <tr><td>"AI 연결 실패: 429"</td><td>무료 한도(1분당 요청 수)를 넘었어요. 1분쯤 뒤 다시 눌러 주세요. 자주 그러면 혼잣말 빈도를 <b>가끔</b>으로 낮추세요.</td></tr>
+    <tr><td>"AI 연결 실패: 429"</td><td>무료 한도(1분당 요청 수)를 넘었어요. 1분쯤 뒤 다시 눌러 주세요. 자주 그러면 혼잣말 간격을 <b>10분 이상</b>으로 늘려 주세요.</td></tr>
     <tr><td>"AI 연결 실패: 503 / 응답 시간 초과"</td><td>AI 서버가 혼잡해요. 앱이 자동으로 다른 모델로 넘어가니 잠시 뒤 다시 시도하세요.</td></tr>
     <tr><td>"400 / API key not valid"</td><td>키가 틀렸거나 삭제됐어요. <span class="menu">AI 키 설정…</span> 에서 새 키를 넣고 연결 테스트하세요.</td></tr>
     <tr><td>캐릭터가 임시 그림으로 나와요</td><td>인터넷 연결을 확인하세요. 쿠리만쥬·시사·랏코는 직접 이미지를 넣어야 해요 (07 참고).</td></tr>

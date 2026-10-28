@@ -12,7 +12,7 @@ const DEFAULTS = {
   characters: { schedule: 'hachiware', chat: 'usagi' },
   // 첫 설정: 불리고 싶은 이름, 직장인(worker)/학생(student)
   profile: { name: '', type: 'worker', setupDone: false },
-  chatter: 'sometimes', // 혼잣말 빈도: off | sometimes | often
+  chatter: '10m', // 혼잣말 간격: 10s | 30s | 1m | 5m | 10m | 30m | 1h | off
   looks: {}, // 캐릭터별 고른 모습 { hachiware: { idle: '주소 또는 파일', talk: ... } }
   positions: {},
 };

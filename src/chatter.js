@@ -43,12 +43,29 @@ const FALLBACK = [
   { ko: '어깨 힘 빼고~', ja: '肩の力を抜いて〜' },
 ];
 
-// 빈도별 다음 혼잣말까지 기다리는 시간(분) 범위
-const INTERVALS = { often: [15, 30], sometimes: [40, 80] };
+// 혼잣말 간격 (설정 값 → 밀리초)
+const INTERVALS = {
+  '10s': 10 * 1000,
+  '30s': 30 * 1000,
+  '1m': 60 * 1000,
+  '5m': 5 * 60 * 1000,
+  '10m': 10 * 60 * 1000,
+  '30m': 30 * 60 * 1000,
+  '1h': 60 * 60 * 1000,
+};
+const DEFAULT_FREQ = '10m';
+const LEGACY = { often: '10m', sometimes: '30m' }; // 예전 설정 값
 
-function nextDelayMs(freq) {
-  const [a, b] = INTERVALS[freq] || INTERVALS.sometimes;
-  return (a + Math.random() * (b - a)) * 60 * 1000;
+function normalizeFreq(freq) {
+  if (freq === 'off') return 'off';
+  const f = LEGACY[freq] || freq;
+  return INTERVALS[f] ? f : DEFAULT_FREQ;
 }
 
-module.exports = { topicFor, FALLBACK, nextDelayMs };
+// 매번 똑같은 박자로 튀어나오지 않게 ±10% 흔들기
+function nextDelayMs(freq) {
+  const base = INTERVALS[normalizeFreq(freq)] || INTERVALS[DEFAULT_FREQ];
+  return Math.round(base * (0.9 + Math.random() * 0.2));
+}
+
+module.exports = { topicFor, FALLBACK, nextDelayMs, normalizeFreq, DEFAULT_FREQ };

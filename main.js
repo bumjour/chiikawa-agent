@@ -146,6 +146,7 @@ function systemPrompt(charId, task) {
     '규칙:',
     '- 처음부터 끝까지 캐릭터 말투를 유지해.',
     '- 한국어 답과 같은 뜻의 일본어 번역을 함께 줘. 일본어도 캐릭터 말투로.',
+    '- ja 문장에는 한글을 한 글자도 쓰지 마 (모두 일본어로).',
     '- 출력은 JSON 하나만: {"ko": "한국어", "ja": "日本語"}',
   ].join('\n');
 }
@@ -271,18 +272,48 @@ ipcMain.handle('pet:talk', async (event, req) => {
 // ---- 혼잣말: 시간대에 맞는 한마디를 대화 캐릭터가 가끔 말풍선으로 ----
 let chatterTimer = null;
 
+// 짧은 간격(10초 등)에도 AI를 매번 부르지 않게, 한 번에 여러 줄을 받아 두고 하나씩 꺼내 써요.
+// 캐릭터·시간대·이름이 바뀌면 새로 받아요.
+const CHATTER_BATCH = 10;
+let chatterPool = { key: '', lines: [], last: '' };
+
 async function makeChatter(charId) {
   const cfg = config.load();
   if (!ai.hasKey(cfg)) return chatter.FALLBACK[Math.floor(Math.random() * chatter.FALLBACK.length)];
-  return askChar(cfg, {
-    system: systemPrompt(charId, '너는 사용자 곁에 늘 있는 친구야. 가끔 혼잣말처럼 툭 한마디 건네.'),
-    messages: [{
-      role: 'user',
-      text: `지금 시각: ${nowText()}\n이 시간대 주제 힌트: ${chatter.topicFor(cfg.profile.type, now())}\n`
-        + '사용자가 지금 듣고 싶어할 만한 한마디를 캐릭터 말투로 해 줘. 한국어 기준 1문장, 30자 안쪽으로 아주 짧게. '
-        + `매번 다른 표현으로. (변주 번호 ${Math.floor(Math.random() * 1000)})`,
-    }],
-  });
+  const topic = chatter.topicFor(cfg.profile.type, now());
+  const key = `${charId}|${topic}|${cfg.profile.name}|${cfg.profile.type}`;
+  if (chatterPool.key !== key || !chatterPool.lines.length) {
+    const reply = await askChar(cfg, {
+      system: systemPrompt(charId, '너는 사용자 곁에 늘 있는 친구야. 가끔 혼잣말처럼 툭 한마디 건네.'),
+      messages: [{
+        role: 'user',
+        text: `지금 시각: ${nowText()}\n이 시간대 주제 힌트: ${topic}\n`
+          + `사용자가 지금 듣고 싶어할 만한 혼잣말을 캐릭터 말투로 ${CHATTER_BATCH}개 만들어 줘. `
+          + '하나당 한국어 기준 30자 안쪽으로 아주 짧게, 서로 다른 표현으로. '
+          + 'ko에는 한국어 혼잣말을 한 줄에 하나씩(줄바꿈으로 구분), ja에는 같은 순서의 일본어 번역을 한 줄에 하나씩 넣어. 번호는 붙이지 마.',
+      }],
+    });
+    const split = (s) => (s || '').split('\n').map((t) => t.trim()).filter(Boolean);
+    const ko = split(reply.ko);
+    const ja = split(reply.ja);
+    chatterPool = { key, lines: ko.map((k, i) => ({ ko: k, ja: ja[i] || '' })), last: chatterPool.last };
+  }
+  // 바로 앞에 한 말은 피해서 무작위로 하나
+  let i = Math.floor(Math.random() * chatterPool.lines.length);
+  if (chatterPool.lines.length > 1 && chatterPool.lines[i].ko === chatterPool.last) i = (i + 1) % chatterPool.lines.length;
+  const [line] = chatterPool.lines.splice(i, 1);
+  chatterPool.last = line.ko;
+  return line;
+}
+
+// 앱을 켜자마자: AI를 기다리지 않고 캐릭터 대표 대사로 첫 혼잣말
+function greetOnStart() {
+  if (chatter.normalizeFreq(config.load().chatter) === 'off') return;
+  const line = CHARACTERS[currentChar('chat')].line;
+  setTimeout(() => {
+    const win = pets.chat;
+    if (line && win && !win.isDestroyed()) win.webContents.send('pet:chatter', line);
+  }, 2500);
 }
 
 async function runChatter() {
@@ -298,7 +329,7 @@ async function runChatter() {
 
 function scheduleChatter(firstDelayMs) {
   clearTimeout(chatterTimer);
-  const freq = config.load().chatter;
+  const freq = chatter.normalizeFreq(config.load().chatter);
   if (freq === 'off') return;
   chatterTimer = setTimeout(runChatter, firstDelayMs ?? chatter.nextDelayMs(freq));
 }
@@ -352,7 +383,7 @@ function openSettings(tab = 'ai') {
 function settingsState(tab) {
   const cfg = config.load();
   return {
-    aiProvider: cfg.aiProvider, apiKeys: cfg.apiKeys, profile: cfg.profile, chatter: cfg.chatter,
+    aiProvider: cfg.aiProvider, apiKeys: cfg.apiKeys, profile: cfg.profile, chatter: chatter.normalizeFreq(cfg.chatter),
     version: app.getVersion(), tab,
   };
 }
@@ -362,7 +393,7 @@ ipcMain.handle('settings:get', (event) => settingsState(BrowserWindow.fromWebCon
 ipcMain.handle('settings:save-profile', (event, { name, type, chatter: freq }) => {
   briefCache.clear();
   const prev = config.load().profile;
-  config.update({ profile: { name: name.trim(), type, setupDone: true }, chatter: freq });
+  config.update({ profile: { name: name.trim(), type, setupDone: true }, chatter: chatter.normalizeFreq(freq) });
   if (prev.nameJaFor !== name.trim()) {
     config.update({ profile: { nameJa: '' } });
     updateNameJa();
@@ -529,7 +560,8 @@ function startNormally() {
     talkSchedule(currentChar('schedule'), 'all').catch(() => {});
   }
   if (cfg.profile.name && cfg.profile.nameJaFor !== cfg.profile.name) updateNameJa();
-  scheduleChatter(3 * 60 * 1000); // 첫 혼잣말은 켜고 3분 뒤
+  greetOnStart();     // 켜자마자 대표 대사 한마디
+  scheduleChatter();  // 그다음부터는 설정한 간격마다
 }
 
 app.on('window-all-closed', () => app.quit());

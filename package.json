@@ -1,7 +1,7 @@
 {
   "name": "chiikawa-agent",
   "productName": "치이카와 에이전트",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "바탕화면에 떠 있는 치이카와 캐릭터 비서 (일정 알림 + AI 대화) · 비공식 팬메이드",
   "author": "chiikawa-agent",
   "main": "main.js",
@@ -39,7 +39,7 @@
         }
       ],
       "icon": "build/icon.png",
-      "artifactName": "ChiikawaAgent-win-${version}.${ext}"
+      "artifactName": "ChiikawaAgent-Windows.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -56,7 +56,7 @@
           ]
         }
       ],
-      "artifactName": "ChiikawaAgent-mac-${version}-${arch}.${ext}",
+      "artifactName": "ChiikawaAgent-Mac-${arch}.${ext}",
       "category": "public.app-category.productivity",
       "icon": "build/icon.png",
       "identity": "-",

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>치이카와 에이전트 다운로드</title>
+<meta name="description" content="바탕화면 치이카와 캐릭터 비서 — 일정 알림 + AI 대화. 비공식 팬메이드, 비영리 무료 배포.">
+<link rel="icon" href="icon.png">
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #2b2622; --sub: #6d6660; --line: #e3e4ec;
+    --accent: #4f72a3; --accent-ink: #ffffff; --accent-soft: #e7eef8; --pick: #fff4d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17181d; --card: #202229; --ink: #ecebe8; --sub: #a7a39e; --line: #34363f;
+      --accent: #8fb0dc; --accent-ink: #14161b; --accent-soft: #263248; --pick: #3a3424; color-scheme: dark; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; line-height: 1.6;
+    padding: 40px max(16px, env(safe-area-inset-left)) 60px max(16px, env(safe-area-inset-right)); }
+  main { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  header img { width: 88px; height: 88px; }
+  h1 { margin: 0; font-size: 28px; }
+  .lede { margin: 0; color: var(--sub); }
+  .downloads { display: flex; flex-direction: column; gap: 12px; }
+  a.dl { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 16px;
+    background: var(--card); border: 2px solid var(--line); color: var(--ink); text-decoration: none; }
+  a.dl:hover, a.dl:focus-visible { border-color: var(--accent); outline: none; }
+  a.dl .os { font-size: 30px; width: 40px; text-align: center; }
+  a.dl .txt { flex: 1; min-width: 0; }
+  a.dl b { display: block; font-size: 18px; }
+  a.dl small { color: var(--sub); }
+  a.dl .btn { padding: 8px 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; white-space: nowrap; }
+  a.dl.mine { background: var(--pick); border-color: var(--accent); }
+  .mine-tag { display: none; font-size: 12px; font-weight: 700; color: var(--accent); }
+  a.dl.mine .mine-tag { display: inline; margin-left: 6px; }
+  a.guide { display: block; text-align: center; padding: 14px; border-radius: 14px; background: var(--accent-soft); color: var(--accent); font-weight: 700; text-decoration: none; }
+  section.how { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; }
+  section.how h2 { margin: 0 0 8px; font-size: 17px; }
+  section.how ol { margin: 0; padding-left: 20px; }
+  section.how li { margin: 4px 0; }
+  footer { color: var(--sub); font-size: 13px; text-align: center; }
+  @media (max-width: 420px) { a.dl { flex-wrap: wrap; } a.dl .btn { width: 100%; text-align: center; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.png" alt="">
+    <h1>치이카와 에이전트</h1>
+    <p class="lede">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화해요 · 무료</p>
+  </header>
+
+  <div class="downloads">
+    <a class="dl" id="win" href="https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Windows.exe">
+      <span class="os">🪟</span>
+      <span class="txt"><b>Windows<span class="mine-tag">· 내 컴퓨터</span></b><small>Windows 10 / 11 (64비트)</small></span>
+      <span class="btn">다운로드</span>
+    </a>
+    <a class="dl" id="mac-arm" href="https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg">
+      <span class="os">🍎</span>
+      <span class="txt"><b>맥 · M1~M4 칩<span class="mine-tag">· 내 컴퓨터</span></b><small>2020년 말 이후 대부분의 맥</small></span>
+      <span class="btn">다운로드</span>
+    </a>
+    <a class="dl" id="mac-intel" href="https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-Intel.dmg">
+      <span class="os">💻</span>
+      <span class="txt"><b>맥 · 인텔 칩</b><small> 메뉴 → 이 Mac에 관하여 → '칩'에 Intel이라고 나오면</small></span>
+      <span class="btn">다운로드</span>
+    </a>
+  </div>
+
+  <a class="guide" href="https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Guide.pdf">📄 설치 가이드 PDF 받기 (A to Z)</a>
+
+  <section class="how">
+    <h2>설치 3단계 (약 6분)</h2>
+    <ol>
+      <li><b>받아서 실행</b> — Windows에서 "PC 보호" 창이 뜨면 <b>추가 정보 → 실행</b>. 맥에서 경고가 뜨면 <b>시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기</b></li>
+      <li><b>무료 AI 키 발급</b> — aistudio.google.com → Get API key</li>
+      <li><b>첫 설정</b> — 이름, 직장인/학생 고르고 키 붙여넣기</li>
+    </ol>
+  </section>
+
+  <footer>
+    비공식 팬메이드 · 비영리 무료 배포<br>
+    「ちいかわ」의 모든 권리는 nagano 및 권리자에게 있으며, 요청 시 즉시 배포를 중단합니다.<br>
+    프로그램에는 캐릭터 이미지가 포함되어 있지 않아요.
+  </footer>
+</main>
+<script>
+  // 내 컴퓨터에 맞는 파일 강조 (맥은 칩 구분이 어려워 M칩을 기본으로)
+  const ua = navigator.userAgent;
+  const mine = /Windows/i.test(ua) ? 'win' : /Mac/i.test(ua) ? 'mac-arm' : null;
+  if (mine) document.getElementById(mine).classList.add('mine');
+</script>
+</body>
+</html>

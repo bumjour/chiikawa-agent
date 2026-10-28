@@ -26,12 +26,18 @@
     </div>
     <p class="hint">시간대별 혼잣말과 대화 주제가 달라져요. (예: 11시 직장인 → "배고프다…점심 뭐 먹지?")</p>
 
-    <label for="chatter">혼잣말 (대화 캐릭터가 가끔 한마디)</label>
+    <label for="chatter">혼잣말 간격 (켜자마자 한마디 + 이 간격마다)</label>
     <select id="chatter">
-      <option value="often">자주 (15~30분마다)</option>
-      <option value="sometimes">가끔 (40~80분마다)</option>
+      <option value="10s">10초마다</option>
+      <option value="30s">30초마다</option>
+      <option value="1m">1분마다</option>
+      <option value="5m">5분마다</option>
+      <option value="10m">10분마다 (기본)</option>
+      <option value="30m">30분마다</option>
+      <option value="1h">1시간마다</option>
       <option value="off">끄기</option>
     </select>
+    <p class="hint">짧게 할수록 AI를 자주 써요. 무료 한도가 금방 찬다면 간격을 늘려 주세요.</p>
 
     <div id="profileStatus" class="status"></div>
     <div class="actions">

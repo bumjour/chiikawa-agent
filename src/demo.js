@@ -200,15 +200,7 @@ async function run(ctx) {
   const { CHARACTERS } = require('./characters');
   const LINEUP = ORDER;
   // 오프닝 대사: 캐릭터 말버릇 × 직장인의 하루 (출근 → 퇴사 고민 → 야근 → 칭찬 → 한 잔 → 월요일 → 칼퇴)
-  const HOOK = {
-    chiikawa: { ko: '출근… 싫어! ㅜㅜ', ja: '出勤…ヤダー！😭' },
-    hachiware: { ko: '있잖아~ 퇴사라는 거… 할까?', ja: 'ねえねえ、退職ってやつ…しちゃう？' },
-    usagi: { ko: '하아?! 또 야근?! 우라!!', ja: 'ハァ？！また残業？！ウラ！！' },
-    momonga: { ko: '출근한 나, 칭찬해! 빨리!', ja: '出勤したボクをほめろ！はやく！' },
-    kurimanju: { ko: '퇴근 후 한 잔..? 키야~!!', ja: '仕事終わりの一杯…？ハァーッ！！' },
-    shisa: { ko: '월요일이어도 기쁘시사!!', ja: '月曜日でもうれシーサー！！' },
-    rakko: { ko: '그렇군… 칼퇴가 답이다.', ja: 'なるほど…定時退社が正解だ。' },
-  };
+  const HOOK = Object.fromEntries(Object.entries(CHARACTERS).map(([id, ch]) => [id, ch.line]));
 
   // ── 준비: 원래 설정 저장(멈춰도 복구) → 예시 이름·일정·시각 적용 → AI 답 미리 받기 ──
   say('준비 중… (예시 일정과 AI 답을 미리 받아 둬요, 약 15초)');
