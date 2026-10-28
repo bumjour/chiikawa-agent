@@ -98,7 +98,7 @@
   <h1>치이카와 에이전트 설치 방법</h1>
   <p class="sub">바탕화면에 치이카와 캐릭터를 띄워<br>오늘 일정을 듣고, AI와 대화하는 방법 A to Z</p>
   <div class="dl"><div class="t">⬇️ 무료 다운로드 (Windows · 맥)</div><div class="u">chiikawa-agent.github.io/chiikawa-agent</div></div>
-  <p class="meta">버전 0.2.7 · Windows 10/11 · macOS 13 이상</p>
+  <p class="meta">버전 0.2.8 · Windows 10/11 · macOS 13 이상</p>
   <div class="minifeat">
     <div>📅<b>일정 비서</b>오늘 일정을<br>캐릭터 말투로</div>
     <div>💬<b>AI 대화</b>캐릭터와 자유롭게 대화</div>
@@ -161,10 +161,10 @@
   <h3>macOS (맥)</h3>
   <ol class="steps">
     <li>다운로드 페이지에서 <b>맥 · M1~M4 칩</b>(<code>ChiikawaAgent-Mac-AppleSilicon.dmg</code>) 또는 <b>맥 · 인텔 칩</b>(<code>ChiikawaAgent-Mac-Intel.dmg</code>) 버튼을 눌러 받아요. 내 칩은 <span class="menu"> 메뉴 → 이 Mac에 관하여</span> 에서 확인해요.</li>
-    <li>dmg를 열고 <b>치이카와 에이전트</b>를 <b>응용 프로그램</b> 폴더로 끌어다 놓아요.</li>
+    <li>dmg를 열고 <b>Chiikawa Agent</b>(맥에서는 영어 이름이에요)를 <b>응용 프로그램</b> 폴더로 끌어다 놓아요.</li>
     <li>처음 열 때 "열 수 없음" 경고가 뜨면 <span class="menu">완료</span> 로 닫아요. (<span class="menu">휴지통으로 이동</span> 은 누르지 마세요)</li>
     <li><span class="menu">시스템 설정 → 개인정보 보호 및 보안</span> 맨 아래의 <span class="menu">그래도 열기</span> → 암호/Touch ID → <span class="menu">열기</span></li>
-    <li>그래도 <b>"손상되었기 때문에 열 수 없습니다"</b>가 뜨면 <span class="menu">응용 프로그램 → 유틸리티 → 터미널</span> 에 아래 한 줄을 붙여넣고 Enter 후 다시 열어요.<br><code>xattr -cr "/Applications/치이카와 에이전트.app"</code></li>
+    <li>그래도 <b>"손상되었기 때문에 열 수 없습니다"</b>가 뜨면 <span class="menu">응용 프로그램 → 유틸리티 → 터미널</span> 에 아래 한 줄을 붙여넣고 Enter 후 다시 열어요.<br><code>xattr -cr "/Applications/Chiikawa Agent.app"</code></li>
   </ol>
 
   <h3>프로그램 끄기 · 지우기</h3>
@@ -418,7 +418,7 @@
     <tr><td>새 버전은 어떻게 받아요?</td><td>새 버전이 나오면 캐릭터가 말풍선으로 알려 줘요. <b>Windows</b>는 <span class="menu">⬆️ 지금 업데이트</span> 를 누르면 저절로 설치하고 다시 켜져요. <b>맥</b>은 <span class="menu">⬇️ 새 버전 받으러 가기</span> 를 눌러 다운로드 페이지에서 받아 덮어 설치하세요. (0.2.4부터 지원 · 그 전 버전은 한 번만 새로 받아 주세요)</td></tr>
     <tr><td>말풍선이 화면 위로 잘려요</td><td>캐릭터를 꾹 눌러 화면 아래쪽으로 옮겨 주세요. 말풍선은 캐릭터 위로 떠요.</td></tr>
     <tr><td>컴퓨터가 느려진 것 같아요</td><td>캐릭터는 가끔만 움직이도록 만들어 부담이 작아요(CPU 1~5%). 그래도 느리면 우클릭 → <span class="menu">종료</span> 후 필요할 때만 켜 주세요.</td></tr>
-    <tr><td>처음부터 다시 설정하고 싶어요</td><td>프로그램을 끄고 설정 폴더의 <code>config.json</code> 을 지운 뒤 다시 켜요.<br>Windows: <code>%APPDATA%\치이카와 에이전트</code> · 맥: <code>~/Library/Application Support/치이카와 에이전트</code></td></tr>
+    <tr><td>처음부터 다시 설정하고 싶어요</td><td>프로그램을 끄고 설정 폴더의 <code>config.json</code> 을 지운 뒤 다시 켜요.<br>Windows: <code>%APPDATA%\치이카와 에이전트</code> · 맥: <code>~/Library/Application Support/Chiikawa Agent</code></td></tr>
   </table>
   <div class="box tip"><p>문제가 계속되면 설정 폴더의 <code>agent.log</code> 파일에 기록이 남아 있어요. 다운로드 페이지의 <b>Issues</b>에 증상과 함께 남겨 주세요. (로그에 API 키는 기록되지 않아요)</p></div>
   <div class="foot"><span>치이카와 에이전트 설치 방법</span><span class="pn"></span></div>
