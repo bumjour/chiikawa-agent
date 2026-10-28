@@ -175,8 +175,12 @@ async function updateNameJa() {
   }
 }
 
+// 홍보 영상 촬영 때만 시각을 고정해요 (밤에 찍어도 낮 일정처럼 보이게). 평소엔 null
+let clockOverride = null;
+const now = () => (clockOverride ? new Date(clockOverride) : new Date());
+
 function nowText() {
-  const d = new Date();
+  const d = now();
   const pad = (n) => String(n).padStart(2, '0');
   return `${schedule.todayKey(d)}(${WEEKDAYS[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
@@ -185,7 +189,7 @@ function nowText() {
 const briefCache = new Map();
 
 function remainingItems(items) {
-  const d = new Date();
+  const d = now();
   const now = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   return items.filter((i) => !i.time || i.time >= now);
 }
@@ -274,7 +278,7 @@ async function makeChatter(charId) {
     system: systemPrompt(charId, '너는 사용자 곁에 늘 있는 친구야. 가끔 혼잣말처럼 툭 한마디 건네.'),
     messages: [{
       role: 'user',
-      text: `지금 시각: ${nowText()}\n이 시간대 주제 힌트: ${chatter.topicFor(cfg.profile.type)}\n`
+      text: `지금 시각: ${nowText()}\n이 시간대 주제 힌트: ${chatter.topicFor(cfg.profile.type, now())}\n`
         + '사용자가 지금 듣고 싶어할 만한 한마디를 캐릭터 말투로 해 줘. 한국어 기준 1문장, 30자 안쪽으로 아주 짧게. '
         + `매번 다른 표현으로. (변주 번호 ${Math.floor(Math.random() * 1000)})`,
     }],
@@ -498,8 +502,21 @@ app.on('second-instance', (_e, argv) => { if (argv.includes('--demo')) app.quit(
 
 app.whenReady().then(() => {
   if (!gotLock) return;
-  if (require('./src/demo').recoverIfNeeded(config)) log('[demo] 지난 시연 설정을 원래대로 되돌렸어요');
+  if (require('./src/demo').recoverIfNeeded(config, schedule)) log('[demo] 지난 시연 설정을 원래대로 되돌렸어요');
   if (process.platform === 'darwin' && app.dock) app.dock.hide(); // 맥 Dock에 아이콘 안 띄우기
+  startNormally();
+
+  // 홍보 영상용 자동 시연 (npm run demo): 가로 전체화면, 엑셀 캡처 배경 위에서 실제 앱을 시연
+  if (process.argv.includes('--demo')) {
+    clearTimeout(chatterTimer); // 시연 중에 혼잣말이 끼어들지 않게
+    setTimeout(() => require('./src/demo').run({
+      pets, config, schedule, talkSchedule, makeChatter, imageFor, log,
+      setClock: (d) => { clockOverride = d; briefCache.clear(); },
+    }).catch((err) => log(`[demo] 실패: ${err.message}`)), 3000);
+  }
+});
+
+function startNormally() {
   createPet('schedule', 1);
   createPet('chat', 0);
   const cfg = config.load();
@@ -513,13 +530,6 @@ app.whenReady().then(() => {
   }
   if (cfg.profile.name && cfg.profile.nameJaFor !== cfg.profile.name) updateNameJa();
   scheduleChatter(3 * 60 * 1000); // 첫 혼잣말은 켜고 3분 뒤
-
-  // 홍보 영상용 자동 시연·녹화 (npm run demo)
-  if (process.argv.includes('--demo')) {
-    clearTimeout(chatterTimer); // 시연 중에 혼잣말이 끼어들지 않게
-    setTimeout(() => require('./src/demo').run({ pets, config, talkSchedule, makeChatter, askChar, systemPrompt, imageFor, log })
-      .catch((err) => log(`[demo] 실패: ${err.message}`)), 3000);
-  }
-});
+}
 
 app.on('window-all-closed', () => app.quit());

@@ -1,6 +1,7 @@
 'use strict';
 // 캐릭터 그리기, 클릭/드래그 처리, 말풍선 표시
 const $ = (id) => document.getElementById(id);
+const petApi = window.pet; // preload가 열어 준 기능
 const petEl = $('pet');
 const bubbleEl = $('bubble');
 const koEl = $('ko');
@@ -38,7 +39,7 @@ function closeBubble() {
   scheduleForm.classList.add('hidden');
   schedBar.classList.add('hidden');
   setPetImage('idle');
-  window.pet.setIgnore(true);
+  petApi.setIgnore(true);
 }
 
 async function say({ ko, ja }, { autoHide } = {}) {
@@ -90,7 +91,7 @@ chatForm.addEventListener('submit', async (e) => {
   chatInput.disabled = true;
   thinking();
   try {
-    say(await window.pet.talk({ type: 'chat', text }));
+    say(await petApi.talk({ type: 'chat', text }));
   } finally {
     chatInput.disabled = false;
     chatInput.focus();
@@ -107,7 +108,7 @@ async function briefSchedule(mode = 'all') {
   scheduleForm.classList.add('hidden');
   schedBar.classList.add('hidden');
   thinking();
-  const res = await window.pet.talk({ type: 'schedule', mode });
+  const res = await petApi.talk({ type: 'schedule', mode });
   if (res.empty) {
     say(res);
     openEditor([]);
@@ -162,25 +163,25 @@ scheduleForm.addEventListener('submit', async (e) => {
     time: row.querySelector('.time').value,
     text: row.querySelector('.text').value,
   }));
-  await window.pet.saveSchedule(items);
+  await petApi.saveSchedule(items);
   briefSchedule();
 });
 
 editBtn.addEventListener('click', async () => {
   say({ ko: '오늘 전체 일정이야! 고칠 게 있으면 고쳐 줘!', ja: '今日の予定ぜんぶだよ！直すところがあったら直してね！' });
-  openEditor(await window.pet.getSchedule());
+  openEditor(await petApi.getSchedule());
 });
 
 // 혼잣말: 말풍선이 닫혀 있을 때만 잠깐 띄웠다가 사라져요.
-window.pet.onChatter((line) => {
+petApi.onChatter((line) => {
   if (!bubbleEl.classList.contains('hidden')) return;
   chatForm.classList.add('hidden');
   say(line, { autoHide: 12000 });
 });
 
-window.pet.onEditSchedule(async () => {
+petApi.onEditSchedule(async () => {
   say({ ko: '오늘 일정 적어 줘!', ja: '今日の予定を書いてね！' });
-  openEditor(await window.pet.getSchedule());
+  openEditor(await petApi.getSchedule());
 });
 
 $('closeBtn').addEventListener('click', closeBubble);
@@ -190,14 +191,14 @@ window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBubble(
 let drag = null;
 
 for (const el of [petEl, bubbleEl]) {
-  el.addEventListener('mouseenter', () => window.pet.setIgnore(false));
-  el.addEventListener('mouseleave', () => { if (!drag) window.pet.setIgnore(true); });
+  el.addEventListener('mouseenter', () => petApi.setIgnore(false));
+  el.addEventListener('mouseleave', () => { if (!drag) petApi.setIgnore(true); });
 }
 
 petEl.addEventListener('mousedown', async (e) => {
   if (e.button !== 0) return;
   drag = { sx: e.screenX, sy: e.screenY, moved: false, win: null };
-  const [x, y] = await window.pet.getPosition();
+  const [x, y] = await petApi.getPosition();
   if (drag) drag.win = { x, y };
 });
 
@@ -208,7 +209,7 @@ window.addEventListener('mousemove', (e) => {
   if (!drag.moved && Math.hypot(dx, dy) < 5) return;
   drag.moved = true;
   petEl.classList.add('dragging');
-  window.pet.moveTo(drag.win.x + dx, drag.win.y + dy);
+  petApi.moveTo(drag.win.x + dx, drag.win.y + dy);
 });
 
 window.addEventListener('mouseup', (e) => {
@@ -216,14 +217,14 @@ window.addEventListener('mouseup', (e) => {
   const wasDrag = drag.moved;
   drag = null;
   petEl.classList.remove('dragging');
-  if (wasDrag) window.pet.dragEnd();
+  if (wasDrag) petApi.dragEnd();
   else onClick();
-  if (!petEl.matches(':hover') && !bubbleEl.matches(':hover')) window.pet.setIgnore(true);
+  if (!petEl.matches(':hover') && !bubbleEl.matches(':hover')) petApi.setIgnore(true);
 });
 
 petEl.addEventListener('contextmenu', (e) => {
   e.preventDefault();
-  window.pet.openMenu();
+  petApi.openMenu();
 });
 
 // ---- 가끔 꿈틀 (6~12초마다 0.8초만 움직여서 PC 부담을 줄여요) ----
@@ -242,7 +243,7 @@ petEl.addEventListener('animationend', () => petEl.classList.remove('wiggle', 't
 // ---- 시작 ----
 scheduleWiggle();
 (async () => {
-  info = await window.pet.init();
+  info = await petApi.init();
   $('nameTag').textContent = `${info.nameKo} · ${info.roleLabel}`;
   chatInput.placeholder = `${info.nameKo}에게 말 걸기…`;
   setPetImage('idle');
