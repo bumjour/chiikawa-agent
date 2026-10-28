@@ -55,7 +55,7 @@ async function prepareImages() {
     console.log('그림:', id);
   }
 }
-const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.4', chatter: '10m', tab: 'profile',
+const SETTINGS = { aiProvider: 'gemini', apiKeys: { gemini: 'AQ.example-key-1234' }, version: '0.2.6', chatter: '10m', tab: 'profile',
   profile: { name: '서연', type: 'worker', setupDone: false } };
 // 모습 고르기: 쿠리만쥬 예시 그림들 중 첫 번째를 고른 상태로 캡처 (items는 prepareImages에서 채워요)
 const PICKER = { charId: 'kurimanju', nameKo: '쿠리만쥬', color: '#fbe6bd', items: [], selected: { idle: null, talk: 'none' } };

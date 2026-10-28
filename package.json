@@ -1,7 +1,7 @@
 {
   "name": "chiikawa-agent",
   "productName": "치이카와 에이전트",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "바탕화면에 떠 있는 치이카와 캐릭터 비서 (일정 알림 + AI 대화) · 비공식 팬메이드",
   "author": "chiikawa-agent",
   "main": "main.js",
