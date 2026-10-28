@@ -10,6 +10,7 @@ const path = require('path');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---- 마우스·키보드: PowerShell 하나를 띄워 두고 명령을 보내요 ----
+// 커서 이동은 실제 마우스 입력(mouse_event)으로: SetCursorPos는 캐릭터 창이 "마우스가 올라왔다"를 못 느껴서 클릭이 뒤로 통과해요
 const PS_HOST = `
 Add-Type @"
 using System; using System.Runtime.InteropServices;
@@ -27,7 +28,8 @@ while ($true) {
   $l = [Console]::In.ReadLine(); if ($l -eq $null -or $l -eq 'exit') { break }
   $p = $l.Split(' ')
   switch ($p[0]) {
-    'move'   { [D]::SetCursorPos([int]$p[1], [int]$p[2]) | Out-Null }
+    'move'   { $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+               [D]::mouse_event(0x8001, [uint32]([int]$p[1] * 65535 / ($b.Width - 1)), [uint32]([int]$p[2] * 65535 / ($b.Height - 1)), 0, [UIntPtr]::Zero) }
     'down'   { [D]::mouse_event(2,0,0,0,[UIntPtr]::Zero) }
     'up'     { [D]::mouse_event(4,0,0,0,[UIntPtr]::Zero) }
     'rdown'  { [D]::mouse_event(8,0,0,0,[UIntPtr]::Zero) }

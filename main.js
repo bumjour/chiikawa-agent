@@ -166,8 +166,8 @@ const briefCache = new Map();
 
 function remainingItems(items) {
   const d = now();
-  const now = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  return items.filter((i) => !i.time || i.time >= now);
+  const hhmm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return items.filter((i) => !i.time || i.time >= hhmm);
 }
 
 const SCHEDULE_PROMPTS = {
