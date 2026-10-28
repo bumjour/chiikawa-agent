@@ -56,6 +56,23 @@
       <path d="M16 30 v32 M26 30 v32 M36 30 v32" stroke="#ffd77a" stroke-width="3" stroke-linecap="round"/>
       <path d="M6 22 q3 -12 12 -10 q4 -9 13 -4 q8 -6 14 2 q9 0 7 12 z" fill="#fffdf6" stroke="#4a3b33" stroke-width="3.5" stroke-linejoin="round"/>
     </svg>`;
+    // 앱(pet.js)과 같은 방식: 그림의 투명 여백을 빼고 보이는 키 128px, 발끝을 같은 선에
+    function fit(img) {
+      try {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
+        const d = g.getImageData(0, 0, w, h).data;
+        let x0 = w, y0 = h, x1 = -1, y1 = -1;
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        if (x1 >= 0) {
+          const s = Math.min(128 / (y1 - y0 + 1), 190 / (x1 - x0 + 1));
+          Object.assign(img.style, { position: 'absolute', width: w * s + 'px', height: h * s + 'px',
+            left: 75 - ((x0 + x1 + 1) / 2) * s + 'px', top: 150 - (y1 + 1) * s + 'px' });
+        }
+      } catch {}
+      img.style.visibility = '';
+    }
     // main(demo.js)이 setLineup(cast)로 캐릭터 목록을 넘겨요: [{ id, nameKo, color, image, ko, ja, prop }]
     function setLineup(cast) {
       const row = document.getElementById('row');
@@ -68,7 +85,7 @@
         slot.querySelector('.ja').textContent = c.ja || '';
         slot.querySelector('.tag').textContent = c.nameKo;
         slot.querySelector('.pet').innerHTML = c.image ? '<img alt="">' : placeholderSvg(c.id, c.color);
-        if (c.image) slot.querySelector('.pet img').src = c.image;
+        if (c.image) { const img = slot.querySelector('.pet img'); img.style.visibility = 'hidden'; img.onload = () => fit(img); img.src = c.image; }
         if (c.prop === 'beer') slot.querySelector('.pet').insertAdjacentHTML('beforeend', BEER);
         row.appendChild(slot);
       }

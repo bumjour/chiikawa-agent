@@ -222,10 +222,8 @@ async function run(ctx) {
   await talkSchedule('hachiware', 'remaining').catch(() => {});
   const cast = LINEUP.map((id) => ({
     id, nameKo: CHARACTERS[id].nameKo, color: CHARACTERS[id].color, ko: HOOK[id].ko, ja: HOOK[id].ja,
-    image: imageFor(id, 'idle'), prop: id === 'kurimanju' ? 'beer' : null,
+    image: imageFor(id, 'idle'), // 쿠리만쥬는 기본 모습이 '키야!!' + 맥주
   }));
-  const kuri = cast.find((c) => c.id === 'kurimanju'); // 맥주잔을 들 수 있는 손 든 자세
-  kuri.image = require('url').pathToFileURL(path.join(__dirname, '..', 'assets', 'characters', 'kurimanju', 'kurimanju1.png')).href;
   for (const w of Object.values(pets)) await w.webContents.executeJavaScript('closeBubble(), true');
 
   const display = screen.getPrimaryDisplay();
@@ -291,15 +289,15 @@ async function run(ctx) {
     await step(1000);
     // ① 우사기 혼잣말
     pets.chat.webContents.send('pet:chatter', chatterLine);
-    await step(3200);
+    await step(4500); // 한 글자씩 천천히 나와요
     await pets.chat.webContents.executeJavaScript('closeBubble(), true');
     // ② 일정 캐릭터를 하치와레로 지정 → 오늘 일정
     await pickCharacter('schedule', 'hachiware');
     await clickOn('schedule', '#pet');
-    await step(5500);
+    await step(8500);
     // ③ 남은 일정
     await clickOn('schedule', '#modeBtn', 550);
-    await step(5500);
+    await step(8000);
     await clickOn('schedule', '#pet', 500); // 닫기
     await step(800);
     // ④ 대화 캐릭터를 쿠리만쥬로 지정 → 대화
@@ -309,7 +307,7 @@ async function run(ctx) {
     for (const ch of '오늘 야근인데 저녁 뭐 먹지?') { clipboard.writeText(ch); await input.keys('^v'); await wait(90); }
     await step(700);
     await input.keys('{ENTER}');
-    await step(7000);
+    await step(9500);
     // ⑤ 마무리: 다시 7종 (편집에서 "댓글에 '치이카와'" 자막 얹기 좋게)
     await input.moveTo(full.x + full.width * 0.9, full.y + full.height * 0.15, 500);
     pets.schedule.hide();
