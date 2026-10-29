@@ -4,8 +4,8 @@
 // - 맥: 애플 개발자 서명이 없으면 자동 설치가 안 돼서, 새 버전이 있으면 다운로드 페이지로 안내
 const { app, shell } = require('electron');
 
-const REPO = 'chiikawa-agent/chiikawa-agent';
-const PAGE = 'https://chiikawa-agent.github.io/chiikawa-agent/';
+const REPO = 'bumjour/chiikawa-agent';
+const PAGE = 'https://bumjour.github.io/chiikawa-agent/';
 const FIRST_CHECK_MS = 10 * 1000;
 const EVERY_MS = 6 * 60 * 60 * 1000;
 

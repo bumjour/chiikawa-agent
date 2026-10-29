@@ -17,3 +17,6 @@ docs/img/
 docs/*.pdf
 demo-restore.json
 assets/demo/
+
+# 홍보 이미지 (캐릭터 그림 포함)
+marketing/

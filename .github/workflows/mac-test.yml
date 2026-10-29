@@ -39,7 +39,7 @@ jobs:
       - name: 받아서 설치하고 실행해 보기 (20초)
         shell: bash {0}
         run: |
-          curl -sSL -o app.dmg "https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg"
+          curl -sSL -o app.dmg "https://github.com/bumjour/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg"
           hdiutil attach app.dmg -nobrowse -mountpoint /Volumes/ca >/dev/null
           ls /Volumes/ca
           cp -R /Volumes/ca/*.app /Applications/

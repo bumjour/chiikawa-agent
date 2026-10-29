@@ -9,14 +9,14 @@
 
 ## ⬇️ 다운로드
 
-**다운로드 페이지: https://chiikawa-agent.github.io/chiikawa-agent/**
+**다운로드 페이지: https://bumjour.github.io/chiikawa-agent/**
 
 | 내 컴퓨터 | 바로 받기 |
 |---|---|
-| 🪟 Windows 10 / 11 | [ChiikawaAgent-Windows.exe](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Windows.exe) |
-| 🍎 맥 · M1~M4 칩 | [ChiikawaAgent-Mac-AppleSilicon.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg) |
-| 💻 맥 · 인텔 칩 | [ChiikawaAgent-Mac-Intel.dmg](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-Intel.dmg) |
-| 📄 설치 가이드 PDF | [ChiikawaAgent-Guide.pdf](https://github.com/chiikawa-agent/chiikawa-agent/releases/latest/download/ChiikawaAgent-Guide.pdf) |
+| 🪟 Windows 10 / 11 | [ChiikawaAgent-Windows.exe](https://github.com/bumjour/chiikawa-agent/releases/latest/download/ChiikawaAgent-Windows.exe) |
+| 🍎 맥 · M1~M4 칩 | [ChiikawaAgent-Mac-AppleSilicon.dmg](https://github.com/bumjour/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-AppleSilicon.dmg) |
+| 💻 맥 · 인텔 칩 | [ChiikawaAgent-Mac-Intel.dmg](https://github.com/bumjour/chiikawa-agent/releases/latest/download/ChiikawaAgent-Mac-Intel.dmg) |
+| 📄 설치 가이드 PDF | [ChiikawaAgent-Guide.pdf](https://github.com/bumjour/chiikawa-agent/releases/latest/download/ChiikawaAgent-Guide.pdf) |
 
 - Windows: "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행**
 - 맥: 처음 열 때 경고가 뜨면 **시스템 설정 → 개인정보 보호 및 보안 → 그래도 열기**
