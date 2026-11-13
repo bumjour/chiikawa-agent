@@ -9,6 +9,7 @@ const ai = require('./src/ai');
 const schedule = require('./src/schedule');
 const looks = require('./src/looks');
 const chatter = require('./src/chatter');
+const autostart = require('./src/autostart');
 const { CHARACTERS, ROLES } = require('./src/characters');
 
 const WIN_W = 340;
@@ -526,6 +527,12 @@ ipcMain.on('pet:context-menu', (event) => {
         { label: '다시 시작', click: () => { app.relaunch(); app.exit(0); } },
       ],
     },
+    {
+      label: 'PC 켤 때 자동 실행',
+      type: 'checkbox',
+      checked: config.load().autoStart !== false,
+      click: (item) => { config.update({ autoStart: item.checked }); autostart.sync(config.load(), log); },
+    },
     { label: '업데이트 확인', click: () => updater.check(true) },
     { label: '정보', click: () => openSettings('about') },
     { type: 'separator' },
@@ -547,6 +554,7 @@ app.whenReady().then(() => {
   if (!gotLock) return;
   if (require('./src/demo').recoverIfNeeded(config, schedule)) log('[demo] 지난 시연 설정을 원래대로 되돌렸어요');
   if (process.platform === 'darwin' && app.dock) app.dock.hide(); // 맥 Dock에 아이콘 안 띄우기
+  if (!process.argv.includes('--demo')) autostart.sync(config.load(), log); // PC 켤 때 자동 실행 등록
   startNormally();
 
   // 홍보 영상용 자동 시연 (npm run demo): 가로 전체화면, 엑셀 캡처 배경 위에서 실제 앱을 시연
